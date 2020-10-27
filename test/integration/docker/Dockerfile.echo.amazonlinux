@@ -1,0 +1,62 @@
+# Define global args
+ARG DISTRO_VERSION
+
+# Grab a fresh copy of the image and install ruby and build the runtime interface client gem
+FROM amazonlinux:${DISTRO_VERSION} AS build-image
+
+ARG RUNTIME_VERSION
+
+RUN yum update -y && \
+    yum install -y git-core zlib zlib-devel gcc-c++ patch readline readline-devel libffi-devel openssl-devel make bzip2 autoconf automake libtool bison curl sqlite-devel
+
+RUN rm -rf /root/.rbenv/
+RUN git clone git://github.com/sstephenson/rbenv.git /root/.rbenv
+ENV PATH="/root/.rbenv/bin:$PATH"
+RUN echo 'eval "$(rbenv init -)"' >> /root/.bashrc
+RUN git clone git://github.com/sstephenson/ruby-build.git /root/.rbenv/plugins/ruby-build
+RUN source /root/.bashrc
+RUN RUNTIME_LATEST_VERSION=$(rbenv install -l | grep  -oE $(echo "^${RUNTIME_VERSION}\.[0-9]+" | sed "s/\\./\\\./1")) && \
+    rbenv install -v ${RUNTIME_LATEST_VERSION} && \
+    rbenv global ${RUNTIME_LATEST_VERSION} && \
+    cp /root/.rbenv/versions/${RUNTIME_LATEST_VERSION}/bin/gem /usr/local/bin/gem && \
+    cp /root/.rbenv/versions/${RUNTIME_LATEST_VERSION}/bin/rake /usr/local/bin/rake && \
+    gem install bundler
+
+ARG RIC_BUILD_DIR="/build"
+# Create directory to build the Runtime Interface Client gem
+RUN mkdir -p ${RIC_BUILD_DIR}
+
+WORKDIR ${RIC_BUILD_DIR}
+COPY . .
+RUN rake build
+
+
+# Grab a fresh copy of the Ruby image
+FROM amazonlinux:${DISTRO_VERSION}
+
+ARG RUNTIME_VERSION
+
+# Copy ruby from the build-image
+COPY --from=build-image /root/.rbenv /root/.rbenv
+
+ENV PATH="/root/.rbenv/bin:$PATH"
+
+# Copy the Runtime Interface Client gem and install it
+ARG RIC_BUILD_DIR="/build"
+COPY --from=build-image ${RIC_BUILD_DIR}/pkg/aws_lambda_ric*.gem aws_lambda_ric.gem
+RUN RUNTIME_LATEST_VERSION=$(rbenv install -l | grep  -oE $(echo "^${RUNTIME_VERSION}\.[0-9]+$" | sed "s/\\./\\\./1")) && \
+    cp /root/.rbenv/versions/${RUNTIME_LATEST_VERSION}/bin/gem /usr/local/bin/gem && \
+    gem install aws_lambda_ric.gem && \
+    cp /root/.rbenv/versions/${RUNTIME_LATEST_VERSION}/bin/aws_lambda_ric /usr/local/bin/aws_lambda_ric
+
+ARG FUNCTION_DIR="/function"
+
+RUN mkdir -p ${FUNCTION_DIR}
+# Copy function code
+COPY test/integration/test-handlers/echo/* ${FUNCTION_DIR}
+# Set working directory to function root directory
+WORKDIR ${FUNCTION_DIR}
+
+ENTRYPOINT ["aws_lambda_ric"]
+CMD ["app.App::Handler.process"]
+

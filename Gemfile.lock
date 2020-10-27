@@ -1,0 +1,22 @@
+PATH
+  remote: .
+  specs:
+    aws_lambda_ric (1.0.0)
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    minitest (5.14.2)
+    rake (10.5.0)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  aws_lambda_ric!
+  bundler (>= 1.17)
+  minitest (~> 5.0)
+  rake (~> 10.0)
+
+BUNDLED WITH
+   2.2.0.rc.2
