@@ -59,6 +59,9 @@ ARG FUNCTION_DIR="/function"
 # Install ruby
 RUN amazon-linux-extras install -y ruby2.6
 
+# Install bundler
+RUN gem install bundler
+
 # Install the Runtime Interface Client
 RUN gem install aws_lambda_ric
 
@@ -68,7 +71,7 @@ COPY app.rb ${FUNCTION_DIR}
 
 WORKDIR ${FUNCTION_DIR}
 
-ENTRYPOINT ["aws_lambda_ric"]
+ENTRYPOINT ["/usr/local/bin/aws_lambda_ric"]
 CMD ["app.App::Handler.process"]
 ```
 
@@ -102,7 +105,7 @@ mkdir -p ~/.aws-lambda-rie && \
 docker run -d -v ~/.aws-lambda-rie:/aws-lambda -p 9000:8080 \
     --entrypoint /aws-lambda/aws-lambda-rie \
     myfunction:latest \
-        aws_lambda_ric app.App::Handler.process
+        /usr/local/bin/aws_lambda_ric app.App::Handler.process
 ```
 
 This runs the image as a container and starts up an endpoint locally at `http://localhost:9000/2015-03-31/functions/function/invocations`. 
@@ -145,3 +148,4 @@ If you discover a potential security issue in this project we ask that you notif
 ## License
 
 This project is licensed under the Apache-2.0 License.
+
