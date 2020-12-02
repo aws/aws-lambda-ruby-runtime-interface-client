@@ -27,6 +27,9 @@ test-integ: setup-codebuild-agent
 build:
 	rake build
 
+.PHONY: pr
+pr: init test-unit test-smoke
+
 define HELP_MESSAGE
 
 Usage: $ make [TARGETS]
@@ -39,5 +42,6 @@ TARGETS
 	test-integ   Run Integration tests.
 	test-unit    Run Unit Tests.
 	test-smoke   Run Sanity/Smoke tests.
+	pr           Perform all checks before submitting a Pull Request.
 
 endef
