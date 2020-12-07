@@ -30,6 +30,17 @@ def log_to_stderr_and_read_fd(event:, context:)
   read_fd('', event)
 end
 
+def log_to_file_and_read_back(event:, context:)
+  logger = Logger.new(event['file_path'])
+  event['messages'].each { |m| logger.info(m) }
+  read_file('', event)
+end
+
+def read_file(content, event)
+  File.foreach(event['file_path']) { |line| content << line }
+  content
+end
+
 def read_fd(content, event)
   File.open(event['fd_path'], 'rb') do |file|
     until file.eof?
