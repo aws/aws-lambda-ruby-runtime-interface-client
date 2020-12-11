@@ -8,6 +8,7 @@ require_relative 'aws_lambda_ric/lambda_handler'
 require_relative 'aws_lambda_ric/lambda_context'
 require_relative 'aws_lambda_ric/lambda_logger'
 require_relative 'aws_lambda_ric/lambda_log_formatter'
+require_relative 'aws_lambda_ric/logger_patch'
 require_relative 'aws_lambda_ric/telemetry_log_sink'
 require_relative 'aws_lambda_ric/aws_lambda_marshaller'
 require_relative 'aws_lambda_ric/xray_cause'
@@ -149,23 +150,7 @@ module AwsLambdaRuntimeInterfaceClient
 
     def mutate_std_logger
       Logger.class_eval do
-        alias_method :orig_initialize, :initialize
-        def initialize(logdev, shift_age = 0, shift_size = 1048576, level: 'debug',
-                       progname: nil, formatter: nil, datetime_format: nil,
-                       binmode: false, shift_period_suffix: '%Y%m%d')
-          #  use unpatched constructor if logdev is a filename or an IO Object other than $stdout or $stderr
-          if logdev && logdev != $stdout && logdev != $stderr
-            orig_initialize(logdev, shift_age, shift_size, level, progname,
-                            formatter, datetime_format, binmode, shift_period_suffix)
-          else
-            self.level = level
-            self.progname = progname
-            @default_formatter = LambdaLogFormatter.new
-            self.datetime_format = datetime_format
-            self.formatter = formatter
-            @logdev = AwsLambdaRuntimeInterfaceClient::TelemetryLoggingHelper.telemetry_log_sink
-          end
-        end
+        prepend LoggerPatch
       end
     end
 
