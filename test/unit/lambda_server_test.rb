@@ -11,13 +11,15 @@ class LambdaServerTest < Minitest::Test
     @request_id = 'test_id'
     @error = LambdaErrors::LambdaRuntimeError.new(StandardError.new('User error, replace user'))
     @error_uri = URI("http://#{@server_address}/2018-06-01/runtime/invocation/#{@request_id}/error")
-    @under_test = LambdaServer.new(@server_address)
+    @mock_user_agent = 'mock-user-agent'
+    @under_test = LambdaServer.new(@server_address, @mock_user_agent)
   end
 
   def test_post_invocation_error_with_large_xray_cause
     large_xray_cause = ('a' * 1024 * 1024)[0..-2]
     headers = {'Lambda-Runtime-Function-Error-Type' => @error.runtime_error_type,
-               'Lambda-Runtime-Function-XRay-Error-Cause' => large_xray_cause}
+               'Lambda-Runtime-Function-XRay-Error-Cause' => large_xray_cause,
+               'User-Agent' => @mock_user_agent}
     post_mock = Minitest::Mock.new
     post_mock.expect :call, nil, [@error_uri, @error.to_lambda_response.to_json, headers]
 
@@ -35,7 +37,8 @@ class LambdaServerTest < Minitest::Test
 
   def test_post_invocation_error_with_too_large_xray_cause
     too_large_xray_cause = 'a' * 1024 * 1024
-    headers = {'Lambda-Runtime-Function-Error-Type' => @error.runtime_error_type}
+    headers = {'Lambda-Runtime-Function-Error-Type' => @error.runtime_error_type,
+                'User-Agent' => @mock_user_agent}
     post_mock = Minitest::Mock.new
     post_mock.expect :call, nil, [@error_uri, @error.to_lambda_response.to_json, headers]
 
