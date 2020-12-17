@@ -26,8 +26,8 @@ module AwsLambdaRuntimeInterfaceClient
 
     ENV_VAR_RUNTIME_API = 'AWS_LAMBDA_RUNTIME_API'
 
-    def initialize(runtime_server_addr)
-      @lambda_server = LambdaServer.new(runtime_server_addr)
+    def initialize(runtime_server_addr, user_agent)
+      @lambda_server = LambdaServer.new(runtime_server_addr, user_agent)
       @runtime_loop_active = true # if false, we will exit the program
       @exit_code = 0
     end

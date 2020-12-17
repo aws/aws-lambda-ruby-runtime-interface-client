@@ -30,9 +30,16 @@ module Bootstrap
     end
     app_root = Dir.pwd
     handler = ARGV[0]
-    lambda_runner = AwsLambdaRuntimeInterfaceClient::LambdaRunner.new(fetch_runtime_server)
+    lambda_runner = AwsLambdaRuntimeInterfaceClient::LambdaRunner.new(fetch_runtime_server, get_user_agent)
     puts "Executing '#{handler}' in function directory '#{app_root}'"
     lambda_runner.run(app_root, handler)
+  end
+
+  def self.get_user_agent
+    ruby_version = RUBY_VERSION.to_s
+    version = AwsLambdaRuntimeInterfaceClient::VERSION
+ 
+    "aws-lambda-ruby/#{ruby_version}-#{version}"
   end
 
 end
