@@ -24,7 +24,6 @@ Gem::Specification.new do |spec|
     README.md
     Gemfile
     NOTICE
-    Gemfile.lock
     aws_lambda_ric.gemspec
     bin/aws_lambda_ric
   ] + Dir['lib/**/*']
