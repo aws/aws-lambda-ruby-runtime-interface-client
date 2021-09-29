@@ -15,7 +15,8 @@ ENV PATH="/root/.rbenv/bin:$PATH"
 RUN echo 'eval "$(rbenv init -)"' >> /root/.bashrc
 RUN git clone git://github.com/sstephenson/ruby-build.git /root/.rbenv/plugins/ruby-build
 RUN source /root/.bashrc
-RUN RUNTIME_LATEST_VERSION=$(rbenv install -l | grep  -oE $(echo "^${RUNTIME_VERSION}\.[0-9]+$" | sed "s/\\./\\\./1")) && \
+RUN RUNTIME_VERSIONS=($(rbenv install -L | grep  -oE $(echo "^${RUNTIME_VERSION}\.[0-9]+"))) && \
+    RUNTIME_LATEST_VERSION=${RUNTIME_VERSIONS[-1]} && \
     rbenv install -v ${RUNTIME_LATEST_VERSION} && \
     rbenv global ${RUNTIME_LATEST_VERSION} && \
     cp /root/.rbenv/versions/${RUNTIME_LATEST_VERSION}/bin/gem /usr/local/bin/gem && \
@@ -44,7 +45,8 @@ ENV PATH="/root/.rbenv/bin:$PATH"
 # Copy the Runtime Interface Client gem and install it
 ARG RIC_BUILD_DIR="/build"
 COPY --from=build-image ${RIC_BUILD_DIR}/pkg/aws_lambda_ric*.gem aws_lambda_ric.gem
-RUN RUNTIME_LATEST_VERSION=$(rbenv install -l | grep  -oE $(echo "^${RUNTIME_VERSION}\.[0-9]+" | sed "s/\\./\\\./1")) && \
+RUN RUNTIME_VERSIONS=($(rbenv install -L | grep  -oE $(echo "^${RUNTIME_VERSION}\.[0-9]+"))) && \
+    RUNTIME_LATEST_VERSION=${RUNTIME_VERSIONS[-1]} && \
     cp /root/.rbenv/versions/${RUNTIME_LATEST_VERSION}/bin/gem /usr/local/bin/gem && \
     gem install aws_lambda_ric.gem && \
     cp /root/.rbenv/versions/${RUNTIME_LATEST_VERSION}/bin/aws_lambda_ric /usr/local/bin/aws_lambda_ric
