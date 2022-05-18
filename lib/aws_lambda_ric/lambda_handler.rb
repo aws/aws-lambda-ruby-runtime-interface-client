@@ -7,6 +7,9 @@ class LambdaHandler
   attr_reader :handler_file_name, :handler_method_name
 
   def initialize(env_handler:)
+    puts '*' * 100
+    puts "HANDLER: #{env_handler}"
+    puts '*' * 100
     handler_split = env_handler.split('|')
     if handler_split.size == 2
       @handler_file_name, @handler_method_name = handler_split
