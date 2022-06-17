@@ -1,5 +1,7 @@
 # Copyright 2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 
+require 'stringio'
+
 def ping(event:, context:)
   resp = {}
   if event.nil?

@@ -2,6 +2,8 @@
 
 # frozen_string_literal: true
 
+require 'stringio'
+
 module AwsLambda
   class Marshaller
     class << self
