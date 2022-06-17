@@ -137,7 +137,7 @@ Make sure the project is built:
 make init build
 ```
 Then,
-* to run unit tests: `make test`
+* to run unit tests: `make test-unit`
 * to run integration tests: `make test-integ`
 * to run smoke tests: `make test-smoke`
 

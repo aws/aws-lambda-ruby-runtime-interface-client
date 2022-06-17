@@ -106,7 +106,7 @@ module AwsLambdaRuntimeInterfaceClient
       @lambda_server.send_init_error(error_object: ex.to_lambda_response, error: ex)
     end
 
-    def send_error_response(lambda_invocation, err, exit_code = nil, runtime_loop_active: true)
+    def send_error_response(lambda_invocation, err, exit_code = nil, runtime_loop_active = true)
       error_object = err.to_lambda_response
       @lambda_server.send_error_response(
         request_id: lambda_invocation.request_id,

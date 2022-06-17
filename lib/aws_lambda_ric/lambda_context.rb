@@ -17,8 +17,8 @@ class LambdaContext
     @function_name = ENV['AWS_LAMBDA_FUNCTION_NAME']
     @memory_limit_in_mb = ENV['AWS_LAMBDA_FUNCTION_MEMORY_SIZE']
     @function_version = ENV['AWS_LAMBDA_FUNCTION_VERSION']
-    @identity = JSON.parse(request['Lambda-Runtime-Cognito-Identity']) if request['Lambda-Runtime-Cognito-Identity']
-    @client_context = JSON.parse(request['Lambda-Runtime-Client-Context']) if request['Lambda-Runtime-Client-Context']
+    @identity = JSON.parse(request['Lambda-Runtime-Cognito-Identity']) unless request['Lambda-Runtime-Cognito-Identity'].to_s.empty?
+    @client_context = JSON.parse(request['Lambda-Runtime-Client-Context']) unless request['Lambda-Runtime-Client-Context'].to_s.empty?
   end
 
   def get_remaining_time_in_millis
