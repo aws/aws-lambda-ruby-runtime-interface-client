@@ -13,10 +13,10 @@ RUN apt-get update -y && \
 
 RUN ln -sf /bin/bash /bin/sh
 RUN rm -rf /root/.rbenv/
-RUN git clone git://github.com/sstephenson/rbenv.git /root/.rbenv
+RUN git clone https://github.com/rbenv/rbenv.git /root/.rbenv
 ENV PATH="/root/.rbenv/bin:$PATH"
 RUN echo 'eval "$(rbenv init -)"' >> /root/.bashrc
-RUN git clone git://github.com/sstephenson/ruby-build.git /root/.rbenv/plugins/ruby-build
+RUN git clone https://github.com/rbenv/ruby-build.git /root/.rbenv/plugins/ruby-build
 RUN bash /root/.bashrc
 
 RUN RUNTIME_VERSIONS=($(rbenv install -L | grep  -oE $(echo "^${RUNTIME_VERSION}\.[0-9]+"))) && \
