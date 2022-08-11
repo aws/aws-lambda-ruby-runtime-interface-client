@@ -10,10 +10,10 @@ RUN yum update -y && \
     yum install -y git-core zlib zlib-devel gcc-c++ patch readline readline-devel libffi-devel openssl-devel make bzip2 autoconf automake libtool bison curl sqlite-devel
 
 RUN rm -rf /root/.rbenv/
-RUN git clone git://github.com/sstephenson/rbenv.git /root/.rbenv
+RUN git clone https://github.com/rbenv/rbenv.git /root/.rbenv
 ENV PATH="/root/.rbenv/bin:$PATH"
 RUN echo 'eval "$(rbenv init -)"' >> /root/.bashrc
-RUN git clone git://github.com/sstephenson/ruby-build.git /root/.rbenv/plugins/ruby-build
+RUN git clone https://github.com/rbenv/ruby-build.git /root/.rbenv/plugins/ruby-build
 RUN source /root/.bashrc
 RUN RUNTIME_VERSIONS=($(rbenv install -L | grep  -oE $(echo "^${RUNTIME_VERSION}\.[0-9]+"))) && \
     RUNTIME_LATEST_VERSION=${RUNTIME_VERSIONS[-1]} && \
