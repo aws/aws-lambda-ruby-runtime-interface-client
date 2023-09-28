@@ -10,7 +10,7 @@ You can include this package in your preferred base image to make that base imag
 
 ## Requirements
 The Ruby Runtime Interface Client package currently supports Ruby versions:
- - 2.7.x up to and including 3.2.x
+ - 2.7.x
  
 ## Usage
 
