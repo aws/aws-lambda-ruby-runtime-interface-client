@@ -16,7 +16,7 @@ Gem::Specification.new do |spec|
   spec.homepage              = 'https://github.com/aws/aws-lambda-ruby-runtime-interface-client'
 
   spec.license               = 'Apache-2.0'
-  spec.required_ruby_version = '>= 2.5'
+  spec.required_ruby_version = '>= 2.7'
 
   # Specify which files should be added to the gem when it is released.
   spec.files                 = %w[
