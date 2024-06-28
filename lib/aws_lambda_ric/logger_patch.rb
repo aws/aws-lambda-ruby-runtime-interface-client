@@ -16,6 +16,7 @@ module LoggerPatch
       self.datetime_format = datetime_format
       self.formatter = formatter
       @logdev = AwsLambdaRuntimeInterfaceClient::TelemetryLoggingHelper.telemetry_log_sink
+      @level_override = {}
     end
   end
 end
