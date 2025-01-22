@@ -2,6 +2,6 @@
 
 # frozen_string_literal: true
 
-module AwsLambdaRuntimeInterfaceClient
-  VERSION = '2.0.0'
+module AwsLambdaRIC
+  VERSION = '3.0.0'
 end

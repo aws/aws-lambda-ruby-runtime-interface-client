@@ -5,6 +5,8 @@
 # frozen_string_literal: true
 
 require 'bundler/setup'
-require_relative '../lib/aws_lambda_ric/bootstrap'
+require_relative '../lib/aws_lambda_ric'
 
-Bootstrap.start
+lambda_ric = AwsLambdaRIC::Bootstrap.new
+
+lambda_ric.start

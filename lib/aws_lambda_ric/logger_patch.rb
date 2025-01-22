@@ -12,10 +12,11 @@ module LoggerPatch
     else
       self.level = level
       self.progname = progname
-      @default_formatter = LambdaLogFormatter.new
+      @default_formatter = LogFormatter.new
       self.datetime_format = datetime_format
       self.formatter = formatter
-      @logdev = AwsLambdaRuntimeInterfaceClient::TelemetryLoggingHelper.telemetry_log_sink
+      @logdev = AwsLambdaRIC::TelemetryLogger.telemetry_log_sink
+      @level_override = {}
     end
   end
 end

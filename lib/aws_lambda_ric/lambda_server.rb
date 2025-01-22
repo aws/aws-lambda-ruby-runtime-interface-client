@@ -6,7 +6,7 @@ require 'net/http'
 require 'json'
 require_relative 'lambda_errors'
 
-class LambdaServer
+class RapidClient
   LAMBDA_DEFAULT_SERVER_ADDRESS = '127.0.0.1:9001'
   LAMBDA_RUNTIME_API_VERSION = '2018-06-01'
 
