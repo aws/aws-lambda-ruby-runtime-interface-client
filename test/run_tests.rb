@@ -1,4 +1,4 @@
-# Copyright 2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# frozen_string_literal: true
 
 # run tests in specified directory and its sub-directories
 if ARGV.length != 1

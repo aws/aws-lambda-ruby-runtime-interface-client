@@ -1,12 +1,10 @@
-# Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-
 # frozen_string_literal: true
 
 require 'net/http'
 require 'json'
 require_relative 'lambda_errors'
 
-class LambdaServer
+class RapidClient
   LAMBDA_DEFAULT_SERVER_ADDRESS = '127.0.0.1:9001'
   LAMBDA_RUNTIME_API_VERSION = '2018-06-01'
 
@@ -32,7 +30,7 @@ class LambdaServer
         [request_id, resp]
       else
         raise LambdaErrors::InvocationError.new(
-            "Received #{resp.code} when waiting for next invocation."
+          "Received #{resp.code} when waiting for next invocation."
         )
       end
     rescue LambdaErrors::InvocationError => e
@@ -50,9 +48,9 @@ class LambdaServer
         response_object = response_object.read
       end
       Net::HTTP.post(
-          response_uri,
-          response_object,
-          { 'Content-Type' => content_type, 'User-Agent' => @user_agent }
+        response_uri,
+        response_object,
+        { 'Content-Type' => content_type, 'User-Agent' => @user_agent }
       )
     rescue StandardError => e
       raise LambdaErrors::LambdaRuntimeError.new(e)
@@ -65,9 +63,9 @@ class LambdaServer
       headers = { 'Lambda-Runtime-Function-Error-Type' => error.runtime_error_type, 'User-Agent' => @user_agent }
       headers['Lambda-Runtime-Function-XRay-Error-Cause'] = xray_cause if xray_cause.bytesize < MAX_HEADER_SIZE_BYTES
       Net::HTTP.post(
-          response_uri,
-          error_object.to_json,
-          headers
+        response_uri,
+        error_object.to_json,
+        headers
       )
     rescue StandardError => e
       raise LambdaErrors::LambdaRuntimeError.new(e)
@@ -78,9 +76,9 @@ class LambdaServer
     uri = URI("#{@server_address}/runtime/init/error")
     begin
       Net::HTTP.post(
-          uri,
-          error_object.to_json,
-          { 'Lambda-Runtime-Function-Error-Type' => error.runtime_error_type, 'User-Agent' => @user_agent }
+        uri,
+        error_object.to_json,
+        { 'Lambda-Runtime-Function-Error-Type' => error.runtime_error_type, 'User-Agent' => @user_agent }
       )
     rescue StandardError => e
       raise LambdaErrors::LambdaRuntimeInitError.new(e)
