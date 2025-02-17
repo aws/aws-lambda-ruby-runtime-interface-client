@@ -20,11 +20,11 @@ services:
       context: .
       dockerfile: ../docker-helpers/Dockerfile.aws-cli
     entrypoint: [
-        aws, lambda, invoke,
-        --endpoint, http://runtime:9001,
-        --no-sign-request,
-        --region, us-west-2,
-        --function-name, ignored,
-        --payload, '{ "name": "Lambda" }',
-        /dev/stdout
+      aws, lambda, invoke,
+      --endpoint, http://runtime:9001,
+      --no-sign-request,
+      --region, us-west-2,
+      --function-name, ignored,
+      --payload, '{ "name": "Lambda" }',
+      /dev/stdout
     ]

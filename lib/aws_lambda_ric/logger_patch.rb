@@ -7,15 +7,16 @@ module LoggerPatch
     #  use unpatched constructor if logdev is a filename or an IO Object other than $stdout or $stderr
     if logdev && logdev != $stdout && logdev != $stderr
       super(logdev, shift_age, shift_size, level: level, progname: progname,
-                      formatter: formatter, datetime_format: datetime_format,
-                      binmode: binmode, shift_period_suffix: shift_period_suffix)
+            formatter: formatter, datetime_format: datetime_format,
+            binmode: binmode, shift_period_suffix: shift_period_suffix)
     else
       self.level = level
       self.progname = progname
-      @default_formatter = LambdaLogFormatter.new
+      @default_formatter = LogFormatter.new
       self.datetime_format = datetime_format
       self.formatter = formatter
-      @logdev = AwsLambdaRuntimeInterfaceClient::TelemetryLoggingHelper.telemetry_log_sink
+      @logdev = AwsLambdaRIC::TelemetryLogger.telemetry_log_sink
+      @level_override = {}
     end
   end
 end

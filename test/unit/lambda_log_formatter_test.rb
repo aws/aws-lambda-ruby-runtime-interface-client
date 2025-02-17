@@ -1,4 +1,4 @@
-# Copyright 2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# frozen_string_literal: true
 
 require_relative '../../lib/aws_lambda_ric/lambda_log_formatter'
 require 'logger'
@@ -12,7 +12,7 @@ class LambdaLogFormatterTest < Minitest::Test
     time = Time.now
     progname = 'test_progname'
     msg = 'log_message'
-    under_test = LambdaLogFormatter.new
+    under_test = LogFormatter.new
 
     actual = under_test.call('INFO', time, progname, msg)
 

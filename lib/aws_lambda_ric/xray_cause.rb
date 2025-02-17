@@ -1,4 +1,4 @@
-# Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# frozen_string_literal: true
 
 require_relative 'lambda_errors'
 
@@ -15,8 +15,8 @@ class XRayCause
 
   def as_json
     @as_json ||= begin
-      JSON.dump(@cause)
-    end
+                   JSON.dump(@cause)
+                 end
   end
 
   private

@@ -1,5 +1,3 @@
-# Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-
 # frozen_string_literal: true
 
 require_relative 'aws_lambda_ric/lambda_errors'
@@ -17,9 +15,16 @@ require 'logger'
 
 $stdout.sync = true # Ensures that logs are flushed promptly.
 
-module AwsLambdaRuntimeInterfaceClient
+module AwsLambdaRIC
 
   class Error < StandardError; end
+
+  def self.get_user_agent
+    ruby_version = RUBY_VERSION.to_s
+    version = AwsLambdaRIC::VERSION
+
+    "aws-lambda-ruby/#{ruby_version}-#{version}"
+  end
 
   # Loads the user code and runs it upon invocation
   class LambdaRunner
@@ -27,7 +32,7 @@ module AwsLambdaRuntimeInterfaceClient
     ENV_VAR_RUNTIME_API = 'AWS_LAMBDA_RUNTIME_API'
 
     def initialize(runtime_server_addr, user_agent)
-      @lambda_server = LambdaServer.new(runtime_server_addr, user_agent)
+      @lambda_server = RapidClient.new(runtime_server_addr, user_agent)
       @runtime_loop_active = true # if false, we will exit the program
       @exit_code = 0
     end
@@ -45,7 +50,7 @@ module AwsLambdaRuntimeInterfaceClient
         @exit_code = -4
         send_init_error_to_server(e)
       ensure
-        TelemetryLoggingHelper.close
+        TelemetryLogger.close
       end
 
       exit(@exit_code)
@@ -121,7 +126,7 @@ module AwsLambdaRuntimeInterfaceClient
   end
 
   # Helper class to for mutating std logger with TelemetryLog
-  class TelemetryLoggingHelper
+  class TelemetryLogger
 
     ENV_VAR_TELEMETRY_LOG_FD = '_LAMBDA_TELEMETRY_LOG_FD'
 
@@ -133,17 +138,25 @@ module AwsLambdaRuntimeInterfaceClient
       end
     end
 
-    def initialize(telemetry_log_fd, path_to_fd='/proc/self/fd/')
-      fd = "#{path_to_fd}#{telemetry_log_fd}"
-      AwsLambdaRuntimeInterfaceClient::TelemetryLoggingHelper.telemetry_log_fd_file = File.open(fd, 'wb')
-      AwsLambdaRuntimeInterfaceClient::TelemetryLoggingHelper.telemetry_log_fd_file.sync = true
+    def initialize(telemetry_log_fd)
+      fd = telemetry_log_fd.to_i
+      AwsLambdaRIC::TelemetryLogger.telemetry_log_fd_file = IO.new(fd, 'wb')
+      AwsLambdaRIC::TelemetryLogger.telemetry_log_fd_file.sync = true
 
-      AwsLambdaRuntimeInterfaceClient::TelemetryLoggingHelper.telemetry_log_sink = TelemetryLogSink.new(file: AwsLambdaRuntimeInterfaceClient::TelemetryLoggingHelper.telemetry_log_fd_file)
+      AwsLambdaRIC::TelemetryLogger.telemetry_log_sink = TelemetryLogSink.new(file: AwsLambdaRIC::TelemetryLogger.telemetry_log_fd_file)
 
       mutate_std_logger
       mutate_kernel_puts
-    rescue Errno::ENOENT
+    rescue Errno::ENOENT, Errno::EBADF
       # If File.open() fails, then the mutation won't happen and the default behaviour (print to stdout) will prevail
+    end
+
+    def self.from_env()
+      if ENV.key?(ENV_VAR_TELEMETRY_LOG_FD)
+        fd = ENV.fetch(AwsLambdaRIC::TelemetryLogger::ENV_VAR_TELEMETRY_LOG_FD)
+        ENV.delete(AwsLambdaRIC::TelemetryLogger::ENV_VAR_TELEMETRY_LOG_FD)
+        AwsLambdaRIC::TelemetryLogger.new(fd)
+      end
     end
 
     private
@@ -158,7 +171,11 @@ module AwsLambdaRuntimeInterfaceClient
       Kernel.module_eval do
         def puts(*arg)
           msg = arg.flatten.collect { |a| a.to_s.encode('UTF-8') }.join("\n")
-          AwsLambdaRuntimeInterfaceClient::TelemetryLoggingHelper.telemetry_log_sink.write(msg)
+          if msg[-1] != "\n"
+            msg += "\n"
+          end
+          AwsLambdaRIC::TelemetryLogger.telemetry_log_sink.write(msg)
+          return nil
         end
       end
     end
@@ -174,6 +191,32 @@ module AwsLambdaRuntimeInterfaceClient
       @raw_request = raw_request
       @request = request
       @trace_id = trace_id
+    end
+  end
+
+  class Bootstrap
+
+    def start
+      AwsLambdaRIC::TelemetryLogger::from_env()
+      bootstrap_handler
+    end
+
+    def fetch_runtime_server
+      ENV.fetch(AwsLambdaRIC::LambdaRunner::ENV_VAR_RUNTIME_API)
+    rescue KeyError
+      puts 'Failed to get runtime server address from AWS_LAMBDA_RUNTIME_API env variable'
+      exit(-2)
+    end
+
+    def bootstrap_handler
+      if ENV['_HANDLER'] == nil
+        puts 'No handler specified, exiting Runtime Interface Client.'
+        exit
+      end
+      app_root = Dir.pwd
+      handler = ENV['_HANDLER']
+      lambda_runner = AwsLambdaRIC::LambdaRunner.new(fetch_runtime_server, AwsLambdaRIC::get_user_agent)
+      lambda_runner.run(app_root, handler)
     end
   end
 end

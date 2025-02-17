@@ -1,6 +1,5 @@
-# Copyright 2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-
 # frozen_string_literal: true
+
 module LambdaErrors
 
   class LambdaErrors::InvocationError < StandardError;
@@ -25,9 +24,9 @@ module LambdaErrors
 
     def to_lambda_response
       {
-          :errorMessage => @error_message,
-          :errorType => @error_type,
-          :stackTrace => @stack_trace
+        :errorMessage => @error_message,
+        :errorType => @error_type,
+        :stackTrace => @stack_trace
       }
     end
 
@@ -39,7 +38,7 @@ module LambdaErrors
       if stacktrace
         stacktrace.first(100).each do |line|
           if safe_trace
-            if line.to_s.match(%r{^lib})
+            if line.to_s.match(%r{^/var/runtime/lib})
               safe_trace = false
             else
               ret << line
