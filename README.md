@@ -18,6 +18,7 @@ The Ruby Runtime Interface Client package currently supports Ruby versions:
 First step is to choose the base image to be used. The supported Linux OS distributions are:
 
  - Amazon Linux 2023
+ - Amazon Linux 2
  - Alpine
  - Debian
  - Ubuntu
