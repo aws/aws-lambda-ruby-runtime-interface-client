@@ -10,7 +10,7 @@ You can include this package in your preferred base image to make that base imag
 
 ## Requirements
 The Ruby Runtime Interface Client package currently supports Ruby versions:
- - 2.5.x up to and including 2.7.x
+ - 3.2 and 3.3
  
 ## Usage
 
@@ -56,13 +56,22 @@ FROM amazonlinux:latest
 ARG FUNCTION_DIR="/function"
 
 # Install ruby
-RUN amazon-linux-extras install -y ruby2.6
+RUN dnf install -y ruby3.2 make
 
 # Install bundler
 RUN gem install bundler
 
 # Install the Runtime Interface Client
 RUN gem install aws_lambda_ric
+
+# If you want to install Runtime Interface Client From Source, you can uncomment the following `ADD` and `RUN` layers. 
+# Do not forget to comment/remove the above `RUN gem install aws_lambda_ric` command.
+# ADD https://github.com/aws/aws-lambda-ruby-runtime-interface-client.git /aws_lambda_ric
+# RUN cd /aws_lambda_ric && \
+#     make init && \
+#     make build && \
+#     gem install --local /aws_lambda_ric/pkg/aws_lambda_ric-3.0.0.gem && \
+#     rm -rf /aws_lambda_ric
 
 # Copy function code
 RUN mkdir -p ${FUNCTION_DIR}
