@@ -17,7 +17,7 @@ The Ruby Runtime Interface Client package currently supports Ruby versions:
 ### Creating a Docker Image for Lambda with the Runtime Interface Client
 First step is to choose the base image to be used. The supported Linux OS distributions are:
 
- - Amazon Linux 2
+ - Amazon Linux 2023
  - Alpine
  - Debian
  - Ubuntu
