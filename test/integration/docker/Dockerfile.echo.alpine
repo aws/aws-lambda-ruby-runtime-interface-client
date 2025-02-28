@@ -36,4 +36,3 @@ WORKDIR ${FUNCTION_DIR}
 
 ENTRYPOINT ["aws_lambda_ric"]
 CMD ["app.App::Handler.process"]
-

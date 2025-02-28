@@ -7,8 +7,8 @@ module LoggerPatch
     logdev_lambda_overwrite = logdev
     # use unpatched constructor if logdev is a filename or an IO Object other than $stdout or $stderr
     if !logdev || logdev == $stdout || logdev == $stderr
-      logdev_lambda_overwrite = AwsLambdaRuntimeInterfaceClient::TelemetryLoggingHelper.telemetry_log_sink
-      @default_formatter = LambdaLogFormatter.new
+      logdev_lambda_overwrite = AwsLambdaRIC::TelemetryLogger.telemetry_log_sink
+      @default_formatter = LogFormatter.new
     end
 
     super(logdev_lambda_overwrite, shift_age, shift_size, level: level, progname: progname,

@@ -1,5 +1,3 @@
-# Copyright 2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-
 # frozen_string_literal: true
 
 require_relative '../../lib/aws_lambda_ric/xray_cause'

@@ -1,0 +1,13 @@
+# Logfile created on 2025-01-26 09:46:34 -0500 by logger.rb/v1.6.5
+I, [2025-01-26T09:46:34.324230 #64600]  INFO -- : Single frame written to a file
+ even if there are multiple lines
+third line
+I, [2025-01-26T10:11:25.666139 #65813]  INFO -- : Single frame written to a file
+ even if there are multiple lines
+third line
+I, [2025-01-26T10:13:02.749685 #66324]  INFO -- : Single frame written to a file
+ even if there are multiple lines
+third line
+I, [2025-01-26T10:17:12.933784 #66820]  INFO -- : Single frame written to a file
+ even if there are multiple lines
+third line

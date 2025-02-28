@@ -1,4 +1,4 @@
-# Copyright 2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# frozen_string_literal: true
 
 require_relative 'aws_lambda_marshaller'
 
@@ -19,8 +19,8 @@ class LambdaHandler
 
   def call_handler(request:, context:)
     opts = {
-        event: request,
-        context: context
+      event: request,
+      context: context
     }
     if @handler_class
       response = Kernel.const_get(@handler_class).send(@handler_method_name, **opts)

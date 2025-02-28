@@ -16,11 +16,9 @@ batch:
         variables:
           DISTRO_VERSION:
             - "buster"
+            - "bullseye"
           RUNTIME_VERSION:
-            - "2.5"
-            - "2.6"
-            - "2.7"
-            - "3.0"
+            - "3.1"
 phases:
   pre_build:
     commands:
@@ -30,14 +28,14 @@ phases:
       - mkdir "${SCRATCH_DIR}"
       - ARCHITECTURE=$(arch)
       - >
-          if [[ "$ARCHITECTURE" == "x86_64" ]]; then
-              RIE="aws-lambda-rie"
-          elif [[ "$ARCHITECTURE" == "aarch64" ]]; then
-              RIE="aws-lambda-rie-arm64"
-          else
-              echo "Architecture $ARCHITECTURE is not currently supported."
-              exit 1
-          fi
+        if [[ "$ARCHITECTURE" == "x86_64" ]]; then
+            RIE="aws-lambda-rie"
+        elif [[ "$ARCHITECTURE" == "aarch64" ]]; then
+            RIE="aws-lambda-rie-arm64"
+        else
+            echo "Architecture $ARCHITECTURE is not currently supported."
+            exit 1
+        fi
       - tar -xvf test/integration/resources/${RIE}.tar.gz --directory "${SCRATCH_DIR}"
       - >
         cp "test/integration/docker/Dockerfile.echo.${OS_DISTRIBUTION}" \
@@ -92,16 +90,16 @@ phases:
         fi
     finally:
       - |
-          echo "---------Container Logs: ${TEST_NAME}-app----------"
-          echo
-          docker logs "${TEST_NAME}-app" || true
-          echo
-          echo "---------------------------------------------------"
-          echo "--------Container Logs: ${TEST_NAME}-tester--------"
-          echo
-          docker logs "${TEST_NAME}-tester" || true
-          echo
-          echo "---------------------------------------------------"
+        echo "---------Container Logs: ${TEST_NAME}-app----------"
+        echo
+        docker logs "${TEST_NAME}-app" || true
+        echo
+        echo "---------------------------------------------------"
+        echo "--------Container Logs: ${TEST_NAME}-tester--------"
+        echo
+        docker logs "${TEST_NAME}-tester" || true
+        echo
+        echo "---------------------------------------------------"
       - echo "Cleaning up..."
       - docker stop "${TEST_NAME}-app" || true
       - docker rm --force "${TEST_NAME}-app" || true

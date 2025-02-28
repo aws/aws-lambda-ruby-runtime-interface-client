@@ -1,0 +1,23 @@
+
+version: 0.2
+
+env:
+  shell: bash
+
+phases:
+  install:
+    commands:
+      - docker logout public.ecr.aws
+      - docker pull public.ecr.aws/amazonlinux/amazonlinux:2
+
+  pre_build:
+    commands:
+      - mkdir -p "${OUT_DIR:-build-artifacts}"
+
+  build:
+    commands:
+      - make build-all OUT_DIR="${OUT_DIR:-build-artifacts}"
+
+artifacts:
+  files:
+    - "build-artifacts/**"
