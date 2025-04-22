@@ -3,7 +3,7 @@
 class LambdaContext
   attr_reader :aws_request_id, :invoked_function_arn, :log_group_name,
               :log_stream_name, :function_name, :memory_limit_in_mb, :function_version,
-              :identity, :client_context, :deadline_ms
+              :identity, :tenant_id, :client_context, :deadline_ms
 
   def initialize(request)
     @clock_diff = Process.clock_gettime(Process::CLOCK_REALTIME, :millisecond) - Process.clock_gettime(Process::CLOCK_MONOTONIC, :millisecond)
@@ -16,6 +16,7 @@ class LambdaContext
     @memory_limit_in_mb = ENV['AWS_LAMBDA_FUNCTION_MEMORY_SIZE']
     @function_version = ENV['AWS_LAMBDA_FUNCTION_VERSION']
     @identity = JSON.parse(request['Lambda-Runtime-Cognito-Identity']) unless request['Lambda-Runtime-Cognito-Identity'].to_s.empty?
+    @tenant_id = request['Lambda-Runtime-Aws-Tenant-Id'] unless request['Lambda-Runtime-Aws-Tenant-Id'].to_s.empty?
     @client_context = JSON.parse(request['Lambda-Runtime-Client-Context']) unless request['Lambda-Runtime-Client-Context'].to_s.empty?
   end
 
