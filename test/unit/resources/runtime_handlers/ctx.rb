@@ -9,7 +9,8 @@ def get_context(event:,context:)
     log_group_name: context.log_group_name,
     log_stream_name: context.log_stream_name,
     memory_limit_in_mb: context.memory_limit_in_mb,
-    function_version: context.function_version
+    function_version: context.function_version,
+    tenant_id: context.tenant_id
   }
 end
 
