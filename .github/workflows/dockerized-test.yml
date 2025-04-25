@@ -1,0 +1,38 @@
+name: dockerized-test
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ '*' ]
+  workflow_dispatch:
+  
+
+jobs:
+  dockerized-test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        ruby_version: ['3.3', '3.4']
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up ruby
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: ${{ matrix.ruby_version }}
+
+    - name: Build the lib
+      run: make build
+
+    - name: Build the image
+      run: docker build . -t local/test -f Dockerfile.test --build-arg BASE_IMAGE=public.ecr.aws/lambda/ruby:${{ matrix.ruby_version }}
+
+    - name: Run tests
+      uses: aws/containerized-test-runner-for-aws-lambda@v1
+      with:
+        suiteFileArray: '["./test/dockerized/suites/*.json"]'
+        dockerImageName: 'local/test'
+        taskFolder: './test/dockerized/tasks'
