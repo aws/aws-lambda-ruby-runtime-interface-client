@@ -1,0 +1,6 @@
+FROM public.ecr.aws/lambda/ruby:3.3
+ENV GEM_HOME=/var/runtime
+RUN gem uninstall aws_lambda_ric --executables
+ADD pkg /tmp/pkg
+RUN gem install /tmp/pkg/aws_lambda_ric-*.gem
+RUN rm -rf /tmp/pkg
