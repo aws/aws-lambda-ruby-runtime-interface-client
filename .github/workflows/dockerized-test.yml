@@ -31,7 +31,7 @@ jobs:
       run: docker build . -t local/test -f Dockerfile.test --build-arg BASE_IMAGE=public.ecr.aws/lambda/ruby:${{ matrix.ruby_version }}
 
     - name: Run tests
-      uses: aws/containerized-test-runner-for-aws-lambda@c03e315c252d8ebc1c33c47975377d7c770db72c
+      uses: aws/containerized-test-runner-for-aws-lambda@main
       with:
         suiteFileArray: '["./test/dockerized/suites/*.json"]'
         dockerImageName: 'local/test'
