@@ -7,7 +7,7 @@ on:
     branches: [ '*' ]
 
 jobs:
-  build:
+  dockerized-test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -27,3 +27,10 @@ jobs:
 
     - name: Build the image
       run: docker build . -t local/test -f Dockerfile.test --build-arg BASE_IMAGE=public.ecr.aws/lambda/ruby:${{ matrix.ruby_version }}
+
+    - name: Run tests
+      uses: aws/containerized-test-runner-for-aws-lambda@v1
+      with:
+        suiteFileArray: ["./test/dockerized/suites/*.json"]
+        dockerImageName: local/test
+        taskFolder: ./test/dockerized/tasks

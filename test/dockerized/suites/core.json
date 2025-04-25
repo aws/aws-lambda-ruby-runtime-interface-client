@@ -1,0 +1,78 @@
+{
+    "tests": [
+        {
+            "name": "test_echo",
+            "handler": "core.ping",
+            "request": {
+                "msg": "message"
+            },
+            "assertions": [
+                {
+                    "response": {
+                        "msg": "pong[message]"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "test_string_payload",
+            "handler": "core.str_ping",
+            "request": "message",
+            "assertions": [
+                {
+                    "response": {
+                        "msg": "pong[message]"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "test_module_echo",
+            "handler": "core.HandlerClass.ping",
+            "request": {
+                "msg": "MyMessage"
+            },
+            "assertions": [
+                {
+                    "response": "Module Message: 'MyMessage'"
+                }
+            ]
+        },
+        {
+            "name": "test_deep_module_echo",
+            "handler": "core.DeepModule::Handler.ping",
+            "request": {
+                "msg": "MyMessage"
+            },
+            "assertions": [
+                {
+                    "response": "Deep Module Message: 'MyMessage'"
+                }
+            ]
+        },
+        {
+            "name": "test_error",
+            "handler": "core.broken",
+            "request": {
+                "msg": "message"
+            },
+            "assertions": [
+                {
+                    "errorType": "Function<ArgumentError>"
+                }
+            ]
+        },
+        {
+            "name": "test_string",
+            "handler": "core.string",
+            "request": {
+                "msg": "MyMessage"
+            },
+            "assertions": [
+                {
+                    "response": "Message: 'MyMessage'"
+                }
+            ]
+        }
+    ]
+}
