@@ -10,9 +10,9 @@ jobs:
   dockerized-test:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         ruby_version: ['3.3', '3.4']
-      fail-fast: false
 
     steps:
     - uses: actions/checkout@v3
