@@ -9,6 +9,7 @@ module LoggerPatch
     if !logdev || logdev == $stdout || logdev == $stderr
       logdev_lambda_overwrite = AwsLambdaRIC::TelemetryLogger.telemetry_log_sink
       @default_formatter = LogFormatter.new
+      @level_override = {}
     end
 
     super(logdev_lambda_overwrite, shift_age, shift_size, level: level, progname: progname,
