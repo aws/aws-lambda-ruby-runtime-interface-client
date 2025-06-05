@@ -1,4 +1,4 @@
-### May 21, 2025
+### Jun 5, 2025
 `3.1.1`
 - Fix Logger Formatting override being ignored. ([#47](https://github.com/aws/aws-lambda-ruby-runtime-interface-client/pull/47))
 
