@@ -9,7 +9,7 @@ module LoggerPatch
     # use unpatched constructor if logdev is a filename or an IO Object other than $stdout or $stderr
     if !logdev || logdev == $stdout || logdev == $stderr
       logdev_lambda_override = AwsLambdaRIC::TelemetryLogger.telemetry_log_sink
-      formatter_override = LogFormatter.new
+      formatter_override = formatter_override || LogFormatter.new
     end
 
     super(logdev_lambda_override, shift_age, shift_size, level: level, progname: progname,
