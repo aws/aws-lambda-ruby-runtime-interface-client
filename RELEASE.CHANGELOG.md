@@ -1,3 +1,7 @@
+### Jun 5, 2025
+`3.1.1`
+- Fix Logger Formatting override being ignored. ([#47](https://github.com/aws/aws-lambda-ruby-runtime-interface-client/pull/47))
+
 ### May 21, 2025
 `3.1.0`
 - Add support for multi tenancy ([#43](https://github.com/aws/aws-lambda-ruby-runtime-interface-client/pull/43))
