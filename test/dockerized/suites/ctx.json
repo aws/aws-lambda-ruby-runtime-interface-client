@@ -1,0 +1,49 @@
+{
+    "tests": [
+        {
+            "name": "test_ctx_cognito_pool_id",
+            "handler": "ctx.get_cognito_pool_id",
+            "cognitoIdentity": {
+                "cognitoIdentityId": "4ab95ea510c14353a7f6da04489c43b8",
+                "cognitoIdentityPoolId": "35ab4794a79a4f23947d3e851d3d6578"
+            },
+            "request": {},
+            "assertions": [
+                {
+                    "response": {
+                        "cognito_pool_id": "35ab4794a79a4f23947d3e851d3d6578"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "test_ctx_cognito_identity_id",
+            "handler": "ctx.get_cognito_identity_id",
+            "cognitoIdentity": {
+                "cognitoIdentityId": "4ab95ea510c14353a7f6da04489c43b8",
+                "cognitoIdentityPoolId": "35ab4794a79a4f23947d3e851d3d6578"
+            },
+            "request": {},
+            "assertions": [
+                {
+                    "response": {
+                        "cognito_identity_id": "4ab95ea510c14353a7f6da04489c43b8"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "get_remaining_time_in_millis | elapsedTime",
+            "handler": "ctx.get_remaining_time_from_context",
+            "request": {
+                "sleepTimeSeconds": 0.1
+            },
+            "assertions": [
+                {
+                    "transform": ".elapsedTime >= 100",
+                    "response": true
+                }
+            ]
+        }
+    ]
+}
