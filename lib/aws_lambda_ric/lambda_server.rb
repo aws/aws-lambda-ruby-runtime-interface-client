@@ -33,6 +33,9 @@ class RapidClient
           "Received #{resp.code} when waiting for next invocation."
         )
       end
+    rescue Interrupt
+      puts "Next invocation HTTP request from the runtime interface client was interrupted, gracefully shutting down."
+      exit 0
     rescue LambdaErrors::InvocationError => e
       raise e
     rescue StandardError => e
