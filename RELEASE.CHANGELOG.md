@@ -1,6 +1,6 @@
 ### Jun 10, 2025
 `3.1.3`
-- Handle Interrupts to the Runtime API Http Requests Gracefully and Version Bump to 3.1.3. ([#50](https://github.com/aws/aws-lambda-ruby-runtime-interface-client/pull/50))
+- Handle Signal Exceptions during Runtime API Http Requests Gracefully and Version Bump to 3.1.3 ([#50](https://github.com/aws/aws-lambda-ruby-runtime-interface-client/pull/50))
 
 ### Jun 6, 2025
 `3.1.2`
