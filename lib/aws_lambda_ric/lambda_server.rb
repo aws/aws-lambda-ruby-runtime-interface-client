@@ -34,8 +34,7 @@ class RapidClient
         )
       end
     rescue SignalException => sig
-      puts "Next invocation HTTP request from the runtime interface client was interrupted with a #{sig} SIGNAL, gracefully shutting down."
-      exit 0
+      raise LambdaErrors::InvocationError.new("Next invocation HTTP request from the runtime interface client was interrupted with a #{sig} SIGNAL, gracefully shutting down.")
     rescue LambdaErrors::InvocationError => e
       raise e
     rescue StandardError => e
