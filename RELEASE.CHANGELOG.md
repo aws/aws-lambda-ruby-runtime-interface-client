@@ -1,3 +1,7 @@
+### Jun 10, 2025
+`3.1.3`
+- Handle Signal Exceptions during Runtime API Http Requests Gracefully and Version Bump to 3.1.3 ([#50](https://github.com/aws/aws-lambda-ruby-runtime-interface-client/pull/50))
+
 ### Jun 6, 2025
 `3.1.2`
 - Don't Ignore Custom Formatters. ([#49](https://github.com/aws/aws-lambda-ruby-runtime-interface-client/pull/49))
