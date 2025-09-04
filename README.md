@@ -138,10 +138,10 @@ This command invokes the function running in the container image and returns a r
 
 ### Automated Local Testing
 
-For a simple approach to test your local RIC changes, use the one-command test setup:
+For a simple approach to run your local RIC changes, use the one-command setup:
 
 ```shell script
-make test-rie
+make run-local-ric
 ```
 
 This command will:
