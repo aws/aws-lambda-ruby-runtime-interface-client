@@ -1,4 +1,4 @@
-FROM public.ecr.aws/lambda/ruby:3.3.2025.08.26.15
+FROM public.ecr.aws/lambda/ruby:3.3
 
 # Copy source code and build gem in container
 COPY . ${LAMBDA_TASK_ROOT}/
