@@ -14,7 +14,9 @@ The Ruby Runtime Interface Client package currently supports ruby 3.0 and above.
 
 ## Migration from 2.x to 3.x
 
-**Change**: Version 3.0.0 introduced a change in how the handler is specified:
+**Important**: Version 2.x is deprecated. Please upgrade to version 3.x. For more information about Lambda runtime support, see the [AWS Lambda runtimes documentation](https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html).
+
+**Breaking Change**: Version 3.0.0 introduced a change in how the handler is specified:
 
 - **Version 2.x**: Handler was passed as a command line argument
 - **Version 3.x+**: Handler must be specified via the `_HANDLER` environment variable
