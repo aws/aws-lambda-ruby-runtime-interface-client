@@ -11,3 +11,5 @@ test/examples/hello-world-docker/pkg
 *.iml
 .DS_Store
 Gemfile.lock
+# useful when using rbenv
+.ruby-version
