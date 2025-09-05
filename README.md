@@ -11,6 +11,15 @@ You can include this package in your preferred base image to make that base imag
 
 ## Requirements
 The Ruby Runtime Interface Client package currently supports ruby 3.0 and above.
+
+## Migration from 2.x to 3.x
+
+**Change**: Version 3.0.0 introduced a change in how the handler is specified:
+
+- **Version 2.x**: Handler was passed as a command line argument
+- **Version 3.x+**: Handler must be specified via the `_HANDLER` environment variable
+
+If you're upgrading from 2.x, update your Dockerfile to use the `_HANDLER` environment variable instead of relying on `CMD` arguments.
  
 ## Usage
 
@@ -39,7 +48,9 @@ Or install it manually as:
 
 The next step would be to copy your Lambda function code into the image's working directory.
 You will need to set the `ENTRYPOINT` property of the Docker image to invoke the Runtime Interface Client and
-then set the `CMD` argument to specify the desired handler.
+set the `_HANDLER` environment variable to specify the desired handler.
+
+**Important**: The Runtime Interface Client requires the handler to be specified via the `_HANDLER` environment variable.
 
 Example Dockerfile:
 ```dockerfile
@@ -57,23 +68,16 @@ RUN gem install bundler
 # Install the Runtime Interface Client
 RUN gem install aws_lambda_ric
 
-# If you want to install Runtime Interface Client From Source, you can uncomment the following `ADD` and `RUN` layers. 
-# Do not forget to comment/remove the above `RUN gem install aws_lambda_ric` command.
-# ADD https://github.com/aws/aws-lambda-ruby-runtime-interface-client.git /aws_lambda_ric
-# RUN cd /aws_lambda_ric && \
-#     make init && \
-#     make build && \
-#     gem install --local /aws_lambda_ric/pkg/aws_lambda_ric-3.0.0.gem && \
-#     rm -rf /aws_lambda_ric
-
 # Copy function code
 RUN mkdir -p ${FUNCTION_DIR}
 COPY app.rb ${FUNCTION_DIR}
 
 WORKDIR ${FUNCTION_DIR}
 
+# Set the handler via environment variable
+ENV _HANDLER="app.App::Handler.process"
+
 ENTRYPOINT ["/usr/local/bin/aws_lambda_ric"]
-CMD ["app.App::Handler.process"]
 ```
 
 Note that the `ENTRYPOINT` may differ based on the base image used. You can find the correct path by running an
@@ -119,9 +123,10 @@ mkdir -p ~/.aws-lambda-rie && \
 
 ```shell script
 docker run -d -v ~/.aws-lambda-rie:/aws-lambda -p 9000:8080 \
+    -e _HANDLER="app.App::Handler.process" \
     --entrypoint /aws-lambda/aws-lambda-rie \
     myfunction:latest \
-        /usr/local/bin/aws_lambda_ric app.App::Handler.process
+        /usr/local/bin/aws_lambda_ric
 ```
 
 This runs the image as a container and starts up an endpoint locally at `http://localhost:9000/2015-03-31/functions/function/invocations`. 
