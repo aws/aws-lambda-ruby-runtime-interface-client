@@ -136,6 +136,28 @@ This command invokes the function running in the container image and returns a r
 
 *Alternately, you can also include RIE as a part of your base image. See the AWS documentation on how to [Build RIE into your base image](https://docs.aws.amazon.com/lambda/latest/dg/images-test.html#images-test-alternative).*
 
+### Automated Local Testing
+
+For a simple approach to run your local RIC changes, use the one-command setup:
+
+```shell script
+make run-local-ric
+```
+
+This command will:
+1. Build a Docker image with your local RIC code
+2. Compile the gem inside the Linux container (avoiding OS compatibility issues)
+3. Start the Lambda Runtime Interface Emulator on port 9000
+4. Run a test Lambda function using your RIC
+
+Once running, invoke the function from another terminal:
+
+```shell script
+curl -X POST "http://localhost:9000/2015-03-31/functions/function/invocations" -d '{}'
+```
+
+Modify the test handler in `test/integration/test-handlers/echo/app.rb` to test different scenarios.
+
 ## Development
 
 ### Building the package

@@ -1,0 +1,19 @@
+FROM public.ecr.aws/lambda/ruby:3.3
+
+# Copy source code and build gem in container
+COPY . ${LAMBDA_TASK_ROOT}/
+WORKDIR ${LAMBDA_TASK_ROOT}
+
+# Uninstall any existing RIC gem for a clean start
+RUN gem uninstall -x aws_lambda_ric || true
+
+# Build and install the RIC gem
+RUN gem install bundler && \
+    bundle install && \
+    rake build && \
+    gem install pkg/aws_lambda_ric-*.gem
+
+# Copy handler to task root
+COPY test/integration/test-handlers/echo/app.rb ${LAMBDA_TASK_ROOT}/
+
+CMD ["app.App::Handler.process"]
