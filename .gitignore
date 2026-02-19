@@ -13,3 +13,5 @@ test/examples/hello-world-docker/pkg
 Gemfile.lock
 # useful when using rbenv
 .ruby-version
+# containerized test runner clone
+.test-runner/

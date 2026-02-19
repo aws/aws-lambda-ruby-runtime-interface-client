@@ -42,14 +42,18 @@ test-dockerized:
 	$(MAKE) build
 	@echo "Building Docker image for Ruby $(RUBY_VERSION)..."
 	docker build . -t local/test -f Dockerfile.test --build-arg BASE_IMAGE=public.ecr.aws/lambda/ruby:$(RUBY_VERSION)
+	@echo "Setting up containerized test runner..."
+	@if [ ! -d ".test-runner" ]; then \
+		echo "Cloning containerized-test-runner-for-aws-lambda..."; \
+		git clone --quiet git@github.com:aws/containerized-test-runner-for-aws-lambda.git .test-runner; \
+	fi
 	@echo "Installing containerized test runner dependencies..."
-# 	@PIP_INDEX_URL=https://pypi.org/simple pip install --quiet poetry-core 2>/dev/null || \
-# 		PIP_INDEX_URL=https://pypi.org/simple pip install --user --quiet poetry-core 2>/dev/null || true
+	@PIP_INDEX_URL=https://pypi.org/simple pip install --quiet poetry-core 2>/dev/null || \
+		PIP_INDEX_URL=https://pypi.org/simple pip install --user --quiet poetry-core 2>/dev/null || true
 	@echo "Installing containerized test runner..."
-	@cd ../containerized-test-runner-for-aws-lambda 
-# 	&& \
-# 		PIP_INDEX_URL=https://pypi.org/simple pip install --quiet . 2>/dev/null || \
-# 		PIP_INDEX_URL=https://pypi.org/simple pip install --user --quiet .
+	@cd .test-runner && \
+		PIP_INDEX_URL=https://pypi.org/simple pip install --quiet . 2>/dev/null || \
+		PIP_INDEX_URL=https://pypi.org/simple pip install --user --quiet .
 	@echo "Running tests..."
 	python -m containerized_test_runner.cli \
 		--test-image local/test \
