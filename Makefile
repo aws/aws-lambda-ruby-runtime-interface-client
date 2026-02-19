@@ -27,6 +27,10 @@ test-integ: setup-codebuild-agent
 build:
 	rake build
 
+.PHONY: run-local-ric
+run-local-ric:
+	scripts/run-local-ric.sh
+
 .PHONY: pr
 pr: init test-unit test-smoke
 
@@ -42,6 +46,7 @@ TARGETS
 	test-integ   Run Integration tests.
 	test-unit    Run Unit Tests.
 	test-smoke   Run Sanity/Smoke tests.
+	run-local-ric  Run local RIC changes with Runtime Interface Emulator.
 	pr           Perform all checks before submitting a Pull Request.
 
 endef

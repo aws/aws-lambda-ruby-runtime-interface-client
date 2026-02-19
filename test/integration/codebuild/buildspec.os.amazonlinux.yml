@@ -84,7 +84,7 @@ phases:
       - |
         echo "Response: ${actual}"
         if [[ "$actual" != "$expected" ]]; then
-          echo "fail! runtime: $RUNTIME - expected output $expected - got $actual"
+          echo "fail! runtime: ${OS_DISTRIBUTION}-${DISTRO_VERSION}:${RUNTIME_VERSION} - expected output $expected - got $actual"
           exit -1
         fi
     finally:

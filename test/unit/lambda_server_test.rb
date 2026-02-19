@@ -15,6 +15,23 @@ class LambdaServerTest < Minitest::Test
     @under_test = RapidClient.new(@server_address, @mock_user_agent)
   end
 
+  def test_next_invocation_handles_different_signals
+    ['INT', 'TERM', 'QUIT'].each do |signal|
+      http_mock = Minitest::Mock.new
+      http_mock.expect(:read_timeout=, nil, [RapidClient::LONG_TIMEOUT_MS])
+      http_mock.expect(:start, nil) { raise SignalException.new(signal) }
+      
+      Net::HTTP.stub :new, http_mock do
+        error = assert_raises(LambdaErrors::InvocationError) do
+          @under_test.next_invocation
+        end
+
+        assert_match(/Next invocation HTTP request from the runtime interface client was interrupted with a SIG#{signal} SIGNAL, gracefully shutting down./, error.message)
+        http_mock.verify
+      end
+    end
+  end
+
   def test_post_invocation_error_with_large_xray_cause
     large_xray_cause = ('a' * 1024 * 1024)[0..-2]
     headers = {'Lambda-Runtime-Function-Error-Type' => @error.runtime_error_type,
