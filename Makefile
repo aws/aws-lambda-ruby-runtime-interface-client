@@ -31,6 +31,32 @@ build:
 run-local-ric:
 	scripts/run-local-ric.sh
 
+.PHONY: test-dockerized
+test-dockerized:
+	@echo "Running dockerized tests locally..."
+	@if [ -z "$(RUBY_VERSION)" ]; then \
+		echo "Error: RUBY_VERSION is not set. Usage: make test-dockerized RUBY_VERSION=3.3"; \
+		exit 1; \
+	fi
+	@echo "Building the lib..."
+	$(MAKE) build
+	@echo "Building Docker image for Ruby $(RUBY_VERSION)..."
+	docker build . -t local/test -f Dockerfile.test --build-arg BASE_IMAGE=public.ecr.aws/lambda/ruby:$(RUBY_VERSION)
+	@echo "Installing containerized test runner dependencies..."
+# 	@PIP_INDEX_URL=https://pypi.org/simple pip install --quiet poetry-core 2>/dev/null || \
+# 		PIP_INDEX_URL=https://pypi.org/simple pip install --user --quiet poetry-core 2>/dev/null || true
+	@echo "Installing containerized test runner..."
+	@cd ../containerized-test-runner-for-aws-lambda 
+# 	&& \
+# 		PIP_INDEX_URL=https://pypi.org/simple pip install --quiet . 2>/dev/null || \
+# 		PIP_INDEX_URL=https://pypi.org/simple pip install --user --quiet .
+	@echo "Running tests..."
+	python -m containerized_test_runner.cli \
+		--test-image local/test \
+		--debug \
+		--task-root $(CURDIR)/test/dockerized/tasks \
+		./test/dockerized/suites/*.json
+
 .PHONY: pr
 pr: init test-unit test-smoke
 
@@ -46,6 +72,7 @@ TARGETS
 	test-integ   Run Integration tests.
 	test-unit    Run Unit Tests.
 	test-smoke   Run Sanity/Smoke tests.
+	test-dockerized  Run dockerized tests locally (requires RUBY_VERSION=X.X).
 	run-local-ric  Run local RIC changes with Runtime Interface Emulator.
 	pr           Perform all checks before submitting a Pull Request.
 
