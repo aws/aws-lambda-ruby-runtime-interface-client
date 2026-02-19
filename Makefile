@@ -53,12 +53,12 @@ test-dockerized:
 	@docker run --rm \
 		-e DOCKER_API_VERSION=1.41 \
 		-v /var/run/docker.sock:/var/run/docker.sock \
-		-v $(CURDIR)/test/dockerized/tasks:/tasks:ro \
+		-v $(CURDIR)/test/dockerized/tasks:$(CURDIR)/test/dockerized/tasks:ro \
 		-v $(CURDIR)/test/dockerized/suites:/suites:ro \
 		test-runner:local \
 		--test-image local/test \
 		--debug \
-		--task-root /tasks \
+		--task-root $(CURDIR)/test/dockerized/tasks \
 		/suites/*.json
 
 .PHONY: pr
