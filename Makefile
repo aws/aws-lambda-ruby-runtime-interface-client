@@ -47,19 +47,18 @@ test-dockerized:
 		echo "Cloning containerized-test-runner-for-aws-lambda..."; \
 		git clone --quiet git@github.com:aws/containerized-test-runner-for-aws-lambda.git .test-runner; \
 	fi
-	@echo "Installing containerized test runner dependencies..."
-	@PIP_INDEX_URL=https://pypi.org/simple pip install --quiet poetry-core 2>/dev/null || \
-		PIP_INDEX_URL=https://pypi.org/simple pip install --user --quiet poetry-core 2>/dev/null || true
-	@echo "Installing containerized test runner..."
-	@cd .test-runner && \
-		PIP_INDEX_URL=https://pypi.org/simple pip install --quiet . 2>/dev/null || \
-		PIP_INDEX_URL=https://pypi.org/simple pip install --user --quiet .
-	@echo "Running tests..."
-	python -m containerized_test_runner.cli \
+	@echo "Building test runner Docker image..."
+	@docker build -t test-runner:local -f Dockerfile.test-runner .
+	@echo "Running tests in Docker..."
+	@docker run --rm \
+		-v /var/run/docker.sock:/var/run/docker.sock \
+		-v $(CURDIR)/test/dockerized/tasks:/tasks:ro \
+		-v $(CURDIR)/test/dockerized/suites:/suites:ro \
+		test-runner:local \
 		--test-image local/test \
 		--debug \
-		--task-root $(CURDIR)/test/dockerized/tasks \
-		./test/dockerized/suites/*.json
+		--task-root /tasks \
+		/suites/*.json
 
 .PHONY: pr
 pr: init test-unit test-smoke
