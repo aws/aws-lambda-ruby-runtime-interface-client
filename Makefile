@@ -51,6 +51,7 @@ test-dockerized:
 	@docker build -t test-runner:local -f Dockerfile.test-runner .
 	@echo "Running tests in Docker..."
 	@docker run --rm \
+		-e DOCKER_API_VERSION=1.41 \
 		-v /var/run/docker.sock:/var/run/docker.sock \
 		-v $(CURDIR)/test/dockerized/tasks:/tasks:ro \
 		-v $(CURDIR)/test/dockerized/suites:/suites:ro \
