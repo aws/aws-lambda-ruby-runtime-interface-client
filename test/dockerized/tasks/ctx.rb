@@ -14,11 +14,11 @@ def get_context(event:,context:)
   end
   
   def get_cognito_pool_id(event:,context:)
-    { cognito_pool_id: context.identity["cognitoIdentityPoolId"]}
+    { cognito_pool_id: context.identity&.dig("cognitoIdentityPoolId")}
   end
   
   def get_cognito_identity_id(event:,context:)
-    { cognito_identity_id: context.identity["cognitoIdentityId"] }
+    { cognito_identity_id: context.identity&.dig("cognitoIdentityId") }
   end
   
   def echo_context(event:,context:)
