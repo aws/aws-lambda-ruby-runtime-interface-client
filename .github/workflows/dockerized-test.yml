@@ -39,3 +39,4 @@ jobs:
         suiteFileArray: '["./test/dockerized/suites/*.json"]'
         dockerImageName: 'local/test'
         taskFolder: './test/dockerized/tasks'
+        hostWorkspace: ${{ github.workspace }}
