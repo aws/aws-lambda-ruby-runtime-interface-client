@@ -33,13 +33,8 @@ jobs:
     - name: Build the image
       run: docker build . -t local/test -f Dockerfile.test --build-arg BASE_IMAGE=public.ecr.aws/lambda/ruby:${{ matrix.ruby_version }}
 
-    - name: Set up Python 3.11
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.11'
-    
     - name: Run tests
-      uses: aws/containerized-test-runner-for-aws-lambda@main
+      uses: aws/containerized-test-runner-for-aws-lambda@maxday/using-docker
       with:
         suiteFileArray: '["./test/dockerized/suites/*.json"]'
         dockerImageName: 'local/test'
