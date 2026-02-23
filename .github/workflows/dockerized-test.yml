@@ -33,14 +33,9 @@ jobs:
     - name: Build the image
       run: docker build . -t local/test -f Dockerfile.test --build-arg BASE_IMAGE=public.ecr.aws/lambda/ruby:${{ matrix.ruby_version }}
 
-    - name: Get workspace path
-      id: workspace
-      run: echo "path=$(pwd)" >> $GITHUB_OUTPUT
-
     - name: Run tests
       uses: aws/containerized-test-runner-for-aws-lambda@maxday/using-docker
       with:
         suiteFileArray: '["./test/dockerized/suites/*.json"]'
         dockerImageName: 'local/test'
         taskFolder: './test/dockerized/tasks'
-        hostWorkspace: ${{ steps.workspace.outputs.path }}
