@@ -186,6 +186,16 @@ Then,
 * to run integration tests: `make test-integ`
 * to run smoke tests: `make test-smoke`
 
+### Running Dockerized Harness Tests
+
+To run the containerized test harness locally, use:
+
+```shell script
+make test-dockerized RUBY_VERSION=3.4
+```
+
+This command builds your Lambda function in a Docker container using the specified Ruby version, sets up the containerized test runner, and executes the test suites defined in `test/dockerized/suites/`.
+
 ### Troubleshooting
 While running integration tests, you might encounter the Docker Hub rate limit error with the following body:
 ```
