@@ -44,13 +44,14 @@ test-dockerized:
 	docker build . -t local/test -f Dockerfile.test --build-arg BASE_IMAGE=public.ecr.aws/lambda/ruby:$(RUBY_VERSION)
 	@echo "Setting up containerized test runner..."
 	@if [ ! -d ".test-runner" ]; then \
-		echo "Cloning containerized-test-runner-for-aws-lambda..."; \
-		git clone --quiet git@github.com:aws/containerized-test-runner-for-aws-lambda.git .test-runner; \
+		echo "Copying local containerized-test-runner-for-aws-lambda..."; \
+		cp -r ../containerized-test-runner-for-aws-lambda .test-runner; \
 	fi
 	@echo "Building test runner Docker image..."
-	@docker build -t test-runner:local -f Dockerfile.test-runner .
+	@docker build -t test-runner:local -f .test-runner/Dockerfile .test-runner
 	@echo "Running tests in Docker..."
 	@docker run --rm \
+		--entrypoint suite \
 		-e DOCKER_API_VERSION=1.41 \
 		-v /var/run/docker.sock:/var/run/docker.sock \
 		-v $(CURDIR)/test/dockerized/tasks:$(CURDIR)/test/dockerized/tasks:ro \
@@ -58,7 +59,6 @@ test-dockerized:
 		test-runner:local \
 		--test-image local/test \
 		--debug \
-		--task-root $(CURDIR)/test/dockerized/tasks \
 		/suites/*.json
 
 .PHONY: pr
