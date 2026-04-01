@@ -15,3 +15,5 @@ Gemfile.lock
 .ruby-version
 # containerized test runner clone
 .test-runner/
+
+.vscode/
