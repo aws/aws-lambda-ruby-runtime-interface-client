@@ -1,3 +1,15 @@
+### Apr 15, 2026
+`3.2.0`
+- fix: sha GitHub actions ([#59](https://github.com/aws/aws-lambda-ruby-runtime-interface-client/pull/59))
+- Add structured JSON logging support 
+ ([#58](https://github.com/aws/aws-lambda-ruby-runtime-interface-client/pull/58))
+- feat: add dockerized testing
+ ([#57](https://github.com/aws/aws-lambda-ruby-runtime-interface-client/pull/57))
+- Update README with correct handler usage ([#55](https://github.com/aws/aws-lambda-ruby-runtime-interface-client/pull/55))
+- Implement local RIC running ([#54](https://github.com/aws/aws-lambda-ruby-runtime-interface-client/pull/54))
+- Add logger runtime dependency for Ruby 3.5 compatibility ([#53](https://github.com/aws/aws-lambda-ruby-runtime-interface-client/pull/53))
+- Fix undefined variable in test error message ([#52](https://github.com/aws/aws-lambda-ruby-runtime-interface-client/pull/52))
+
 ### Jun 10, 2025
 `3.1.3`
 - Handle Signal Exceptions during Runtime API Http Requests Gracefully and Version Bump to 3.1.3 ([#50](https://github.com/aws/aws-lambda-ruby-runtime-interface-client/pull/50))
