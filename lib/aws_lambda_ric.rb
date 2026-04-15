@@ -131,10 +131,19 @@ module AwsLambdaRIC
     ENV_VAR_TELEMETRY_LOG_FD = '_LAMBDA_TELEMETRY_LOG_FD'
 
     class << self
-      attr_accessor :telemetry_log_fd_file, :telemetry_log_sink
-
+      attr_accessor :telemetry_log_fd_file, :telemetry_log_sink, :logger_patch_applied
       def close
         telemetry_log_fd_file&.close
+        self.telemetry_log_fd_file = nil
+      end
+
+      def mutate_std_logger
+        return if logger_patch_applied
+
+        Logger.class_eval do
+          prepend LoggerPatch
+        end
+        self.logger_patch_applied = true
       end
     end
 
@@ -145,27 +154,27 @@ module AwsLambdaRIC
 
       AwsLambdaRIC::TelemetryLogger.telemetry_log_sink = TelemetryLogSink.new(file: AwsLambdaRIC::TelemetryLogger.telemetry_log_fd_file)
 
-      mutate_std_logger
       mutate_kernel_puts
+
     rescue Errno::ENOENT, Errno::EBADF
-      # If File.open() fails, then the mutation won't happen and the default behaviour (print to stdout) will prevail
+      AwsLambdaRIC::TelemetryLogger.telemetry_log_fd_file = nil
+      AwsLambdaRIC::TelemetryLogger.telemetry_log_sink = nil
     end
 
     def self.from_env()
-      if ENV.key?(ENV_VAR_TELEMETRY_LOG_FD)
-        fd = ENV.fetch(AwsLambdaRIC::TelemetryLogger::ENV_VAR_TELEMETRY_LOG_FD)
-        ENV.delete(AwsLambdaRIC::TelemetryLogger::ENV_VAR_TELEMETRY_LOG_FD)
-        AwsLambdaRIC::TelemetryLogger.new(fd)
-      end
+
+      LoggerPatch.refresh_runtime_config!
+      mutate_std_logger
+      AwsLambdaRIC::TelemetryLogger.telemetry_log_sink = nil
+
+      return unless ENV.key?(ENV_VAR_TELEMETRY_LOG_FD)
+
+      fd = ENV.fetch(AwsLambdaRIC::TelemetryLogger::ENV_VAR_TELEMETRY_LOG_FD)
+      ENV.delete(AwsLambdaRIC::TelemetryLogger::ENV_VAR_TELEMETRY_LOG_FD)
+      AwsLambdaRIC::TelemetryLogger.new(fd)
     end
 
     private
-
-    def mutate_std_logger
-      Logger.class_eval do
-        prepend LoggerPatch
-      end
-    end
 
     def mutate_kernel_puts
       Kernel.module_eval do
@@ -180,7 +189,6 @@ module AwsLambdaRIC
       end
     end
   end
-
   # Represents a single Lambda Invocation Request
   class LambdaInvocationRequest
 
