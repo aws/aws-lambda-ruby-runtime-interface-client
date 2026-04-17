@@ -28,7 +28,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Extract RIE
+      - name: Download RIE
         run: |
           mkdir -p .scratch
           ARCH=$(uname -m)
@@ -40,7 +40,8 @@ jobs:
             echo "Unsupported architecture: $ARCH"
             exit 1
           fi
-          tar -xzf "test/integration/resources/${RIE_NAME}.tar.gz" -C .scratch
+          curl -sSL "https://github.com/aws/aws-lambda-runtime-interface-emulator/releases/latest/download/${RIE_NAME}" -o ".scratch/${RIE_NAME}"
+          chmod +x ".scratch/${RIE_NAME}"
           echo "RIE_NAME=${RIE_NAME}" >> "$GITHUB_ENV"
 
       - name: Build Docker image

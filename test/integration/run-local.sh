@@ -34,7 +34,7 @@ cleanup() {
 }
 trap cleanup EXIT
 
-# Extract RIE
+# Download RIE
 mkdir -p "$SCRATCH_DIR"
 ARCH=$(uname -m)
 if [ "$ARCH" = "x86_64" ]; then
@@ -45,7 +45,9 @@ else
   echo "Unsupported architecture: $ARCH" >&2
   exit 1
 fi
-tar -xzf "test/integration/resources/${RIE}.tar.gz" -C "$SCRATCH_DIR"
+echo "Downloading ${RIE} from GitHub..."
+curl -sSL "https://github.com/aws/aws-lambda-runtime-interface-emulator/releases/latest/download/${RIE}" -o "${SCRATCH_DIR}/${RIE}"
+chmod +x "${SCRATCH_DIR}/${RIE}"
 
 # Build image
 DOCKERFILE="test/integration/docker/Dockerfile.echo.${DISTRO}"
