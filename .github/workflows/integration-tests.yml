@@ -24,6 +24,15 @@ jobs:
             rie: aws-lambda-rie-arm64
             label: arm64
         distro_config:
+          # al2023
+          - distro: al2023
+            distro_version: "al2023"
+            runtime_version: "3.4"
+            executable: /usr/local/bin/aws_lambda_ric
+          - distro: al2023
+            distro_version: "al2023"
+            runtime_version: "3.3"
+            executable: /usr/local/bin/aws_lambda_ric
           # Alpine
           - distro: alpine
             distro_version: "3.23"
@@ -42,7 +51,7 @@ jobs:
             distro_version: bookworm
             runtime_version: "3.3"
             executable: /usr/local/bundle/bin/aws_lambda_ric
-          # Debian
+          # Ubuntu
           - distro: ubuntu
             distro_version: "24.04"
             runtime_version: "3.4"

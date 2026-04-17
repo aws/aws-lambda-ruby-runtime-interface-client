@@ -17,7 +17,7 @@ case "$DISTRO" in
   alpine|debian)
     EXECUTABLE="/usr/local/bundle/bin/aws_lambda_ric"
     ;;
-  amazonlinux|ubuntu)
+  al2023|amazonlinux|ubuntu)
     EXECUTABLE="/usr/local/bin/aws_lambda_ric"
     ;;
   *)
