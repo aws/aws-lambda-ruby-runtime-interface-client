@@ -1,0 +1,156 @@
+name: integration-tests
+
+permissions:
+  contents: read
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: ['*']
+  workflow_dispatch:
+
+jobs:
+  integration-test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Alpine
+          - distro: alpine
+            distro_version: "3.16"
+            runtime_version: "3.1"
+            executable: /usr/local/bundle/bin/aws_lambda_ric
+            curl_install: apk add curl
+          - distro: alpine
+            distro_version: "3.19"
+            runtime_version: "3.3"
+            executable: /usr/local/bundle/bin/aws_lambda_ric
+            curl_install: apk add curl
+          - distro: alpine
+            distro_version: "3.20"
+            runtime_version: "3.4"
+            executable: /usr/local/bundle/bin/aws_lambda_ric
+            curl_install: apk add curl
+
+          # Debian
+          - distro: debian
+            distro_version: bullseye
+            runtime_version: "3.1"
+            executable: /usr/local/bundle/bin/aws_lambda_ric
+            curl_install: "true"
+          - distro: debian
+            distro_version: bookworm
+            runtime_version: "3.3"
+            executable: /usr/local/bundle/bin/aws_lambda_ric
+            curl_install: "true"
+          - distro: debian
+            distro_version: bookworm
+            runtime_version: "3.4"
+            executable: /usr/local/bundle/bin/aws_lambda_ric
+            curl_install: "true"
+
+          # Amazon Linux
+          - distro: amazonlinux
+            distro_version: "2"
+            runtime_version: "3.1"
+            executable: /usr/local/bin/aws_lambda_ric
+            curl_install: "true"
+
+          # Ubuntu
+          - distro: ubuntu
+            distro_version: "22.04"
+            runtime_version: "3.1"
+            executable: /usr/local/bin/aws_lambda_ric
+            curl_install: apt-get update -y && apt-get install -y curl
+          - distro: ubuntu
+            distro_version: "24.04"
+            runtime_version: "3.3"
+            executable: /usr/local/bin/aws_lambda_ric
+            curl_install: apt-get update -y && apt-get install -y curl
+
+    name: "${{ matrix.distro }} ${{ matrix.distro_version }} / ruby ${{ matrix.runtime_version }}"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extract RIE
+        run: |
+          mkdir -p .scratch
+          ARCH=$(uname -m)
+          if [ "$ARCH" = "x86_64" ]; then
+            RIE_NAME="aws-lambda-rie"
+          elif [ "$ARCH" = "aarch64" ]; then
+            RIE_NAME="aws-lambda-rie-arm64"
+          else
+            echo "Unsupported architecture: $ARCH"
+            exit 1
+          fi
+          tar -xzf "test/integration/resources/${RIE_NAME}.tar.gz" -C .scratch
+          echo "RIE_NAME=${RIE_NAME}" >> "$GITHUB_ENV"
+
+      - name: Build Docker image
+        run: |
+          DOCKERFILE="test/integration/docker/Dockerfile.echo.${{ matrix.distro }}"
+          TMPFILE=".scratch/Dockerfile.tmp"
+          cp "$DOCKERFILE" "$TMPFILE"
+          echo "RUN ${{ matrix.curl_install }}" >> "$TMPFILE"
+          echo "COPY .scratch/${{ env.RIE_NAME }} /usr/bin/${{ env.RIE_NAME }}" >> "$TMPFILE"
+          docker build . \
+            -f "$TMPFILE" \
+            -t ric-test \
+            --build-arg RUNTIME_VERSION=${{ matrix.runtime_version }} \
+            --build-arg DISTRO_VERSION=${{ matrix.distro_version }}
+
+      - name: Run integration test
+        run: |
+          TEST_NAME="ric-integ-test"
+          docker network create "${TEST_NAME}-net"
+
+          # Start the Lambda function container with RIE
+          docker run \
+            --detach \
+            --name "${TEST_NAME}-app" \
+            --network "${TEST_NAME}-net" \
+            --entrypoint="" \
+            ric-test \
+            sh -c "/usr/bin/${{ env.RIE_NAME }} ${{ matrix.executable }} app.App::Handler.process"
+
+          # Wait for RIE to be ready
+          sleep 2
+
+          # Invoke the function
+          docker run \
+            --name "${TEST_NAME}-tester" \
+            --env "TARGET=${TEST_NAME}-app" \
+            --network "${TEST_NAME}-net" \
+            --entrypoint="" \
+            ric-test \
+            sh -c 'curl -sS -X POST "http://${TARGET}:8080/2015-03-31/functions/function/invocations" -d "{}" --max-time 10'
+
+          # Assert response
+          ACTUAL="$(docker logs --tail 1 "${TEST_NAME}-tester" | xargs)"
+          EXPECTED="success"
+          echo "Response: ${ACTUAL}"
+          if [ "$ACTUAL" != "$EXPECTED" ]; then
+            echo "FAIL: ${{ matrix.distro }}-${{ matrix.distro_version }}:${{ matrix.runtime_version }} — expected '${EXPECTED}', got '${ACTUAL}'"
+            exit 1
+          fi
+          echo "PASS"
+
+      - name: Dump container logs
+        if: always()
+        run: |
+          TEST_NAME="ric-integ-test"
+          echo "=== App container logs ==="
+          docker logs "${TEST_NAME}-app" 2>&1 || true
+          echo "=== Tester container logs ==="
+          docker logs "${TEST_NAME}-tester" 2>&1 || true
+
+      - name: Cleanup
+        if: always()
+        run: |
+          TEST_NAME="ric-integ-test"
+          docker rm -f "${TEST_NAME}-app" "${TEST_NAME}-tester" 2>/dev/null || true
+          docker network rm "${TEST_NAME}-net" 2>/dev/null || true

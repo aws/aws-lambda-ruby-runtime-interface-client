@@ -7,21 +7,19 @@ target:
 init:
 	bundle install
 
-.PHONY: setup-codebuild-agent
-setup-codebuild-agent:
-	docker build -t codebuild-agent - < test/integration/codebuild-local/Dockerfile.agent
-
-.PHONY: test-smoke
-test-smoke: setup-codebuild-agent
-	CODEBUILD_IMAGE_TAG=codebuild-agent test/integration/codebuild-local/test_one.sh test/integration/codebuild/buildspec.os.alpine.1.yml alpine 3.16 3.1
-
 .PHONY: test-unit
 test-unit:
 	ruby test/run_tests.rb unit
 
 .PHONY: test-integ
-test-integ: setup-codebuild-agent
-	CODEBUILD_IMAGE_TAG=codebuild-agent test/integration/codebuild-local/test_all.sh test/integration/codebuild
+test-integ:
+	@echo "Integration tests run via GitHub Actions (see .github/workflows/integration-tests.yml)"
+	@echo "To run a single combo locally:"
+	@echo "  make test-integ-local DISTRO=alpine DISTRO_VERSION=3.19 RUNTIME_VERSION=3.3"
+
+.PHONY: test-integ-local
+test-integ-local:
+	test/integration/run-local.sh $(DISTRO) $(DISTRO_VERSION) $(RUNTIME_VERSION)
 
 .PHONY: build
 build:
@@ -62,7 +60,7 @@ test-dockerized:
 		/suites/*.json
 
 .PHONY: pr
-pr: init test-unit test-smoke
+pr: init test-unit
 
 define HELP_MESSAGE
 
@@ -73,9 +71,9 @@ TARGETS
 	build        Builds the package.
 	clean        Cleans the working directory by removing built artifacts.
 	init         Initialize and install the dependencies and dev-dependencies for this project.
-	test-integ   Run Integration tests.
+	test-integ   Show instructions for running integration tests.
+	test-integ-local  Run a single integration test locally (requires DISTRO, DISTRO_VERSION, RUNTIME_VERSION).
 	test-unit    Run Unit Tests.
-	test-smoke   Run Sanity/Smoke tests.
 	test-dockerized  Run dockerized tests locally (requires RUBY_VERSION=X.X).
 	run-local-ric  Run local RIC changes with Runtime Interface Emulator.
 	pr           Perform all checks before submitting a Pull Request.
