@@ -34,7 +34,7 @@ FROM public.ecr.aws/lambda/provided:al2023
 
 ARG RUNTIME_VERSION
 
-RUN dnf install -y libyaml
+RUN dnf install -y libyaml libxcrypt
 
 # Copy ruby from the build-image
 COPY --from=build-image /root/.rbenv /root/.rbenv
