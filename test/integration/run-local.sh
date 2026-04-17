@@ -26,19 +26,6 @@ case "$DISTRO" in
     ;;
 esac
 
-# Determine curl install command
-case "$DISTRO" in
-  alpine)
-    CURL_INSTALL="apk add curl"
-    ;;
-  ubuntu)
-    CURL_INSTALL="apt-get update -y && apt-get install -y curl"
-    ;;
-  *)
-    CURL_INSTALL="true"
-    ;;
-esac
-
 cleanup() {
   echo "Cleaning up..."
   docker rm -f "${TEST_NAME}-app" "${TEST_NAME}-tester" 2>/dev/null || true
@@ -64,7 +51,6 @@ tar -xzf "test/integration/resources/${RIE}.tar.gz" -C "$SCRATCH_DIR"
 DOCKERFILE="test/integration/docker/Dockerfile.echo.${DISTRO}"
 TMPFILE="${SCRATCH_DIR}/Dockerfile.tmp"
 cp "$DOCKERFILE" "$TMPFILE"
-echo "RUN ${CURL_INSTALL}" >> "$TMPFILE"
 echo "COPY ${SCRATCH_DIR}/${RIE} /usr/bin/${RIE}" >> "$TMPFILE"
 
 IMAGE_TAG="ric-test-${DISTRO}-${DISTRO_VERSION}:${RUNTIME_VERSION}"

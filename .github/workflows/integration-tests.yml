@@ -22,7 +22,6 @@ jobs:
             distro_version: "3.23"
             runtime_version: "3.4"
             executable: /usr/local/bundle/bin/aws_lambda_ric
-            curl_install: apk add curl
 
     name: "${{ matrix.distro }} ${{ matrix.distro_version }} / ruby ${{ matrix.runtime_version }}"
 
@@ -49,7 +48,6 @@ jobs:
           DOCKERFILE="test/integration/docker/Dockerfile.echo.${{ matrix.distro }}"
           TMPFILE=".scratch/Dockerfile.tmp"
           cp "$DOCKERFILE" "$TMPFILE"
-          echo "RUN ${{ matrix.curl_install }}" >> "$TMPFILE"
           echo "COPY .scratch/${{ env.RIE_NAME }} /usr/bin/${{ env.RIE_NAME }}" >> "$TMPFILE"
           docker build . \
             -f "$TMPFILE" \

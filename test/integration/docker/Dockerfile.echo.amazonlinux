@@ -35,6 +35,8 @@ RUN rake build
 # Grab a fresh copy of the Ruby image
 FROM amazonlinux:${DISTRO_VERSION}
 
+RUN yum install -y curl
+
 ARG RUNTIME_VERSION
 
 # Copy ruby from the build-image
