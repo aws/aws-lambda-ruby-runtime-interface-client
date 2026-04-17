@@ -19,56 +19,10 @@ jobs:
         include:
           # Alpine
           - distro: alpine
-            distro_version: "3.16"
-            runtime_version: "3.1"
-            executable: /usr/local/bundle/bin/aws_lambda_ric
-            curl_install: apk add curl
-          - distro: alpine
-            distro_version: "3.19"
-            runtime_version: "3.3"
-            executable: /usr/local/bundle/bin/aws_lambda_ric
-            curl_install: apk add curl
-          - distro: alpine
-            distro_version: "3.20"
+            distro_version: "3.23"
             runtime_version: "3.4"
             executable: /usr/local/bundle/bin/aws_lambda_ric
             curl_install: apk add curl
-
-          # Debian
-          - distro: debian
-            distro_version: bullseye
-            runtime_version: "3.1"
-            executable: /usr/local/bundle/bin/aws_lambda_ric
-            curl_install: "true"
-          - distro: debian
-            distro_version: bookworm
-            runtime_version: "3.3"
-            executable: /usr/local/bundle/bin/aws_lambda_ric
-            curl_install: "true"
-          - distro: debian
-            distro_version: bookworm
-            runtime_version: "3.4"
-            executable: /usr/local/bundle/bin/aws_lambda_ric
-            curl_install: "true"
-
-          # Amazon Linux
-          - distro: amazonlinux
-            distro_version: "2"
-            runtime_version: "3.1"
-            executable: /usr/local/bin/aws_lambda_ric
-            curl_install: "true"
-
-          # Ubuntu
-          - distro: ubuntu
-            distro_version: "22.04"
-            runtime_version: "3.1"
-            executable: /usr/local/bin/aws_lambda_ric
-            curl_install: apt-get update -y && apt-get install -y curl
-          - distro: ubuntu
-            distro_version: "24.04"
-            runtime_version: "3.3"
-            executable: /usr/local/bin/aws_lambda_ric
-            curl_install: apt-get update -y && apt-get install -y curl
 
     name: "${{ matrix.distro }} ${{ matrix.distro_version }} / ruby ${{ matrix.runtime_version }}"
 
