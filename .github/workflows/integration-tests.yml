@@ -12,18 +12,25 @@ on:
 
 jobs:
   integration-test:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.arch.runner }}
     strategy:
       fail-fast: false
       matrix:
-        include:
+        arch:
+          - runner: ubuntu-latest
+            rie: aws-lambda-rie
+            label: x64
+          - runner: ubuntu-24.04-arm
+            rie: aws-lambda-rie-arm64
+            label: arm64
+        distro_config:
           # Alpine
           - distro: alpine
             distro_version: "3.23"
             runtime_version: "3.4"
             executable: /usr/local/bundle/bin/aws_lambda_ric
 
-    name: "${{ matrix.distro }} ${{ matrix.distro_version }} / ruby ${{ matrix.runtime_version }}"
+    name: "${{ matrix.distro_config.distro }} ${{ matrix.distro_config.distro_version }} / ruby ${{ matrix.distro_config.runtime_version }} (${{ matrix.arch.label }})"
 
     steps:
       - uses: actions/checkout@v4
@@ -31,30 +38,22 @@ jobs:
       - name: Download RIE
         run: |
           mkdir -p .scratch
-          ARCH=$(uname -m)
-          if [ "$ARCH" = "x86_64" ]; then
-            RIE_NAME="aws-lambda-rie"
-          elif [ "$ARCH" = "aarch64" ]; then
-            RIE_NAME="aws-lambda-rie-arm64"
-          else
-            echo "Unsupported architecture: $ARCH"
-            exit 1
-          fi
+          RIE_NAME="${{ matrix.arch.rie }}"
           curl -sSL "https://github.com/aws/aws-lambda-runtime-interface-emulator/releases/latest/download/${RIE_NAME}" -o ".scratch/${RIE_NAME}"
           chmod +x ".scratch/${RIE_NAME}"
           echo "RIE_NAME=${RIE_NAME}" >> "$GITHUB_ENV"
 
       - name: Build Docker image
         run: |
-          DOCKERFILE="test/integration/docker/Dockerfile.echo.${{ matrix.distro }}"
+          DOCKERFILE="test/integration/docker/Dockerfile.echo.${{ matrix.distro_config.distro }}"
           TMPFILE=".scratch/Dockerfile.tmp"
           cp "$DOCKERFILE" "$TMPFILE"
           echo "COPY .scratch/${{ env.RIE_NAME }} /usr/bin/${{ env.RIE_NAME }}" >> "$TMPFILE"
           docker build . \
             -f "$TMPFILE" \
             -t ric-test \
-            --build-arg RUNTIME_VERSION=${{ matrix.runtime_version }} \
-            --build-arg DISTRO_VERSION=${{ matrix.distro_version }}
+            --build-arg RUNTIME_VERSION=${{ matrix.distro_config.runtime_version }} \
+            --build-arg DISTRO_VERSION=${{ matrix.distro_config.distro_version }}
 
       - name: Run integration test
         run: |
@@ -68,7 +67,7 @@ jobs:
             --network "${TEST_NAME}-net" \
             --entrypoint="" \
             ric-test \
-            sh -c "/usr/bin/${{ env.RIE_NAME }} ${{ matrix.executable }} app.App::Handler.process"
+            sh -c "/usr/bin/${{ env.RIE_NAME }} ${{ matrix.distro_config.executable }} app.App::Handler.process"
 
           # Wait for RIE to be ready
           sleep 2
@@ -87,7 +86,7 @@ jobs:
           EXPECTED="success"
           echo "Response: ${ACTUAL}"
           if [ "$ACTUAL" != "$EXPECTED" ]; then
-            echo "FAIL: ${{ matrix.distro }}-${{ matrix.distro_version }}:${{ matrix.runtime_version }} — expected '${EXPECTED}', got '${ACTUAL}'"
+            echo "FAIL: ${{ matrix.distro_config.distro }}-${{ matrix.distro_config.distro_version }}:${{ matrix.distro_config.runtime_version }} — expected '${EXPECTED}', got '${ACTUAL}'"
             exit 1
           fi
           echo "PASS"
