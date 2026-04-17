@@ -29,15 +29,27 @@ jobs:
             distro_version: "3.23"
             runtime_version: "3.4"
             executable: /usr/local/bundle/bin/aws_lambda_ric
+          - distro: alpine
+            distro_version: "3.23"
+            runtime_version: "3.3"
+            executable: /usr/local/bundle/bin/aws_lambda_ric
           # Debian
           - distro: debian
             distro_version: bookworm
             runtime_version: "3.4"
             executable: /usr/local/bundle/bin/aws_lambda_ric
+          - distro: debian
+            distro_version: bookworm
+            runtime_version: "3.3"
+            executable: /usr/local/bundle/bin/aws_lambda_ric
           # Debian
           - distro: ubuntu
             distro_version: "24.04"
             runtime_version: "3.4"
+            executable: /usr/local/bin/aws_lambda_ric
+          - distro: ubuntu
+            distro_version: "24.04"
+            runtime_version: "3.3"
             executable: /usr/local/bin/aws_lambda_ric
 
     name: "${{ matrix.distro_config.distro }} ${{ matrix.distro_config.distro_version }} / ruby ${{ matrix.distro_config.runtime_version }} (${{ matrix.arch.label }})"
