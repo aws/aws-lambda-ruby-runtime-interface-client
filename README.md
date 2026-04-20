@@ -23,16 +23,21 @@ The Ruby Runtime Interface Client package currently supports ruby 3.0 and above.
 
 If you're upgrading from 2.x, update your Dockerfile to use the `_HANDLER` environment variable instead of relying on `CMD` arguments.
  
+## Supported Base Operating Systems
+
+The Ruby Runtime Interface Client supports the following Linux distributions:
+
+- **Amazon Linux 2023**
+- **Alpine**
+- **Debian**
+- **Ubuntu**
+
+For Alpine, Debian, and Ubuntu, we support the latest LTS release and the previous LTS release for 6 months after a new LTS version has been released.
+
 ## Usage
 
 ### Creating a Docker Image for Lambda with the Runtime Interface Client
-First step is to choose the base image to be used. The supported Linux OS distributions are:
-
- - Amazon Linux 2023
- - Amazon Linux 2
- - Alpine
- - Debian
- - Ubuntu
+First step is to choose the base image to be used.
 
 In order to install the Runtime Interface Client, either add this line to your application's Gemfile:
 
