@@ -42,7 +42,7 @@ FROM ubuntu:${DISTRO_VERSION}
 
 # Get dependencies for the Runtime Interface Client
 RUN apt-get update -y && \
-    apt-get install -y libyaml-dev libssl-dev
+    apt-get install -y libyaml-dev libssl-dev curl
 
 ARG RUNTIME_VERSION
 
