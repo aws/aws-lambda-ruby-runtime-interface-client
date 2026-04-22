@@ -1,6 +1,7 @@
 name: integration-tests
 
 permissions:
+  id-token: write
   contents: read
 
 on:
@@ -35,6 +36,12 @@ jobs:
 
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@ececac1a45f3b08a01d2dd070d28d111c5fe6722 # v4
+        with:
+          role-to-assume: ${{ secrets.AWS_OIDC_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Download RIE
         run: |
@@ -100,6 +107,16 @@ jobs:
           docker logs "${TEST_NAME}-app" 2>&1 || true
           echo "=== Tester container logs ==="
           docker logs "${TEST_NAME}-tester" 2>&1 || true
+
+      - name: Publish failure metric
+        if: failure()
+        run: |
+          aws cloudwatch put-metric-data \
+            --namespace "GitHubActions" \
+            --metric-name "TestResult" \
+            --dimensions "Distro=${{ matrix.distro_config.distro }},DistroVersion=${{ matrix.distro_config.distro_version }},RuntimeVersion=${{ matrix.distro_config.runtime_version }},Arch=${{ matrix.arch.label }}" \
+            --value 1 \
+            --unit Count
 
       - name: Cleanup
         if: always()
