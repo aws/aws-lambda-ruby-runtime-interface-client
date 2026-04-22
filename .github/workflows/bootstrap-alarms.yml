@@ -51,8 +51,8 @@ jobs:
 
             echo "Creating alarm: ${ALARM_NAME}"
 
-            # period = 259200s = 3 days (runs every workday + buffer for weekends)
-            # Alarms when no success metric is received within the period
+            # Alarms if no success metric is received within 3 days
+            # Uses 1-day periods with 3 evaluation periods for faster state transitions
             aws cloudwatch put-metric-alarm \
               --alarm-name "${ALARM_NAME}" \
               --alarm-description "Integration test: ${distro} ${distro_version} / ruby ${runtime_version} (${arch})" \
@@ -60,9 +60,9 @@ jobs:
               --metric-name "TestResult" \
               --dimensions "Name=Distro,Value=${distro}" "Name=DistroVersion,Value=${distro_version}" "Name=RuntimeVersion,Value=${runtime_version}" "Name=Arch,Value=${arch}" \
               --statistic Sum \
-              --period 259200 \
-              --evaluation-periods 1 \
-              --datapoints-to-alarm 1 \
+              --period 86400 \
+              --evaluation-periods 3 \
+              --datapoints-to-alarm 3 \
               --threshold 1 \
               --comparison-operator LessThanThreshold \
               --treat-missing-data breaching
