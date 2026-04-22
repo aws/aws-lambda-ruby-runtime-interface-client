@@ -51,6 +51,7 @@ jobs:
 
             echo "Creating alarm: ${ALARM_NAME}"
 
+            # period = 691200s = 8 days (7-day schedule + 1-day buffer)
             aws cloudwatch put-metric-alarm \
               --alarm-name "${ALARM_NAME}" \
               --alarm-description "Integration test: ${distro} ${distro_version} / ruby ${runtime_version} (${arch})" \
@@ -58,7 +59,6 @@ jobs:
               --metric-name "TestResult" \
               --dimensions "Name=Distro,Value=${distro}" "Name=DistroVersion,Value=${distro_version}" "Name=RuntimeVersion,Value=${runtime_version}" "Name=Arch,Value=${arch}" \
               --statistic SampleCount \
-              # 8 days (7-day schedule + 1-day buffer)
               --period 691200 \
               --evaluation-periods 1 \
               --datapoints-to-alarm 1 \
