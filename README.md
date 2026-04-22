@@ -23,7 +23,23 @@ The Ruby Runtime Interface Client package currently supports ruby 3.0 and above.
 
 If you're upgrading from 2.x, update your Dockerfile to use the `_HANDLER` environment variable instead of relying on `CMD` arguments.
  
-## Supported Base Operating Systems
+## Usage
+
+Create a Ruby handler. This is an example `app.rb`:
+
+```ruby
+module App
+  class Handler
+    def self.process(event:, context:)
+      "Hello World!"
+    end
+  end
+end
+```
+
+### Creating a Docker Image for Lambda with the Runtime Interface Client
+
+#### Supported Base Operating Systems
 
 The Ruby Runtime Interface Client supports the following Linux distributions:
 
@@ -33,31 +49,11 @@ The Ruby Runtime Interface Client supports the following Linux distributions:
 - **Ubuntu**
 
 For Alpine, Debian, and Ubuntu, we support the latest LTS release and the previous LTS release for 6 months after a new LTS version has been released.
-
-## Usage
-
-### Creating a Docker Image for Lambda with the Runtime Interface Client
 First step is to choose the base image to be used.
 
-In order to install the Runtime Interface Client, either add this line to your application's Gemfile:
+#### Amazon Linux 2023
 
-```ruby
-gem 'aws_lambda_ric'
-```
-
-And then execute:
-
-    $ bundle
-
-Or install it manually as:
-
-    $ gem install aws_lambda_ric
-
-The next step would be to copy your Lambda function code into the image's working directory.
-You will need to set the `ENTRYPOINT` property of the Docker image to invoke the Runtime Interface Client and
-set the `_HANDLER` environment variable to specify the desired handler.
-
-**Important**: The Runtime Interface Client requires the handler to be specified via the `_HANDLER` environment variable.
+AWS Lambda provides ready to use OCI image based on Amazon Linux 2023, you just need to copy your handler file and specify the `CMD` command.
 
 Example Dockerfile:
 ```dockerfile
@@ -70,27 +66,8 @@ ADD test/integration/test-handlers/echo/app.rb .
 CMD ["app.App::Handler.process"]
 ```
 
-Note that the `ENTRYPOINT` may differ based on the base image used. You can find the correct path by running an
-interactive shell in the container and checking the installed location of the gem.
+For other distributions, please refer to Dockerfile in the code sample directory.
 
-```shell script
-docker run -it --rm amazonlinux:latest bash
-yum install -y which ruby
-gem install aws_lambda_ric
-which aws_lambda_ric
-```
-
-Finally, create a Ruby handler. This is an example `app.rb`:
-
-```ruby
-module App
-  class Handler
-    def self.process(event:, context:)
-      "Hello World!"
-    end
-  end
-end
-```
 
 ### Local Testing
 
