@@ -17,7 +17,7 @@ jobs:
   bootstrap:
     runs-on: ubuntu-latest
     env:
-      COMPOSITE_ALARM_NAME: ${{ github.repository_owner }}-${{ github.event.repository.name }}-integration-tests-aggregate
+      COMPOSITE_ALARM_NAME: GitHubActions-${{ github.repository_owner }}-${{ github.event.repository.name }}-integration-tests-aggregate
 
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -47,7 +47,7 @@ jobs:
             distro_version=$(echo "$row" | jq -r '.distro_version')
             runtime_version=$(echo "$row" | jq -r '.runtime_version')
 
-            ALARM_NAME="ruby-ric-${distro}-${distro_version}-ruby${runtime_version}-${arch}"
+            ALARM_NAME="GitHubActions-ruby-ric-${distro}-${distro_version}-ruby${runtime_version}-${arch}"
 
             echo "Creating alarm: ${ALARM_NAME}"
 
