@@ -90,6 +90,8 @@ jobs:
           aws cloudwatch put-composite-alarm \
             --alarm-name "${COMPOSITE_ALARM_NAME}" \
             --alarm-description "Aggregate alarm for all Ruby RIC integration test permutations" \
-            --alarm-rule "${RULE}"
+            --alarm-rule "${RULE}" \
+            --actions-enabled \
+            --alarm-actions "${{ secrets.AWS_ALARM_TARGET_ARN }}"
 
           echo "Composite alarm '${COMPOSITE_ALARM_NAME}' created successfully."
