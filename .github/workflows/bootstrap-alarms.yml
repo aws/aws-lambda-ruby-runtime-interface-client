@@ -1,0 +1,92 @@
+name: bootstrap-alarms
+
+permissions:
+  id-token: write
+  contents: read
+
+on:
+  workflow_dispatch:
+
+env:
+  AWS_REGION: ${{ env.AWS_REGION }}
+  ALARM_NAMESPACE: GitHubActions
+  COMPOSITE_ALARM_NAME: aws_aws-lambda-ruby-runtime-interface-client
+
+jobs:
+  bootstrap:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@ececac1a45f3b08a01d2dd070d28d111c5fe6722 # v4
+        with:
+          role-to-assume: ${{ secrets.AWS_OIDC_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Create individual metric alarms
+        run: |
+          set -euo pipefail
+
+          MATRIX_FILE=".github/test-matrix.json"
+          ALARM_NAMES=()
+
+          # Iterate over every arch × distro_config permutation from the shared matrix
+          for row in $(jq -c '
+            .arch[] as $a |
+            .distro_config[] as $d |
+            { arch: $a.label, distro: $d.distro, distro_version: $d.distro_version, runtime_version: $d.runtime_version }
+          ' "$MATRIX_FILE"); do
+
+            arch=$(echo "$row" | jq -r '.arch')
+            distro=$(echo "$row" | jq -r '.distro')
+            distro_version=$(echo "$row" | jq -r '.distro_version')
+            runtime_version=$(echo "$row" | jq -r '.runtime_version')
+
+            ALARM_NAME="ruby-ric-${distro}-${distro_version}-ruby${runtime_version}-${arch}"
+
+            echo "Creating alarm: ${ALARM_NAME}"
+
+            aws cloudwatch put-metric-alarm \
+              --alarm-name "${ALARM_NAME}" \
+              --alarm-description "Integration test: ${distro} ${distro_version} / ruby ${runtime_version} (${arch})" \
+              --namespace "${ALARM_NAMESPACE}" \
+              --metric-name "TestResult" \
+              --dimensions "Name=Distro,Value=${distro}" "Name=DistroVersion,Value=${distro_version}" "Name=RuntimeVersion,Value=${runtime_version}" "Name=Arch,Value=${arch}" \
+              --statistic SampleCount \
+              --period 60 \
+              --evaluation-periods 1 \
+              --threshold 0 \
+              --comparison-operator GreaterThanThreshold
+
+            ALARM_NAMES+=("${ALARM_NAME}")
+          done
+
+          # Save alarm names for the composite alarm step
+          printf '%s\n' "${ALARM_NAMES[@]}" > /tmp/alarm_names.txt
+
+      - name: Create composite aggregate alarm
+        run: |
+          set -euo pipefail
+
+          mapfile -t ALARM_NAMES < /tmp/alarm_names.txt
+
+          # Build the composite alarm rule: triggers if ANY sub-alarm fires
+          RULE=""
+          for name in "${ALARM_NAMES[@]}"; do
+            if [ -n "$RULE" ]; then
+              RULE="${RULE} OR "
+            fi
+            RULE="${RULE}ALARM(\"${name}\")"
+          done
+
+          echo "Composite alarm rule:"
+          echo "${RULE}"
+
+          aws cloudwatch put-composite-alarm \
+            --alarm-name "${COMPOSITE_ALARM_NAME}" \
+            --alarm-description "Aggregate alarm for all Ruby RIC integration test permutations" \
+            --alarm-rule "${RULE}"
+
+          echo "Composite alarm '${COMPOSITE_ALARM_NAME}' created successfully."

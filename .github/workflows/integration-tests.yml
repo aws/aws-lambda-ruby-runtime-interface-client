@@ -11,55 +11,25 @@ on:
   workflow_dispatch:
 
 jobs:
+  load-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Load test matrix
+        id: set
+        run: |
+          MATRIX=$(jq -c '.' .github/test-matrix.json)
+          echo "matrix=${MATRIX}" >> "$GITHUB_OUTPUT"
+
   integration-test:
+    needs: load-matrix
     runs-on: ${{ matrix.arch.runner }}
     strategy:
       fail-fast: false
-      matrix:
-        arch:
-          - runner: ubuntu-latest
-            rie: aws-lambda-rie
-            label: x64
-          - runner: ubuntu-24.04-arm
-            rie: aws-lambda-rie-arm64
-            label: arm64
-        distro_config:
-          # al2023
-          - distro: al2023
-            distro_version: "al2023"
-            runtime_version: "3.4"
-            executable: /usr/local/bin/aws_lambda_ric
-          - distro: al2023
-            distro_version: "al2023"
-            runtime_version: "3.3"
-            executable: /usr/local/bin/aws_lambda_ric
-          # Alpine
-          - distro: alpine
-            distro_version: "3.23"
-            runtime_version: "3.4"
-            executable: /usr/local/bundle/bin/aws_lambda_ric
-          - distro: alpine
-            distro_version: "3.23"
-            runtime_version: "3.3"
-            executable: /usr/local/bundle/bin/aws_lambda_ric
-          # Debian
-          - distro: debian
-            distro_version: bookworm
-            runtime_version: "3.4"
-            executable: /usr/local/bundle/bin/aws_lambda_ric
-          - distro: debian
-            distro_version: bookworm
-            runtime_version: "3.3"
-            executable: /usr/local/bundle/bin/aws_lambda_ric
-          # Ubuntu
-          - distro: ubuntu
-            distro_version: "24.04"
-            runtime_version: "3.4"
-            executable: /usr/local/bin/aws_lambda_ric
-          - distro: ubuntu
-            distro_version: "24.04"
-            runtime_version: "3.3"
-            executable: /usr/local/bin/aws_lambda_ric
+      matrix: ${{ fromJson(needs.load-matrix.outputs.matrix) }}
 
     name: "${{ matrix.distro_config.distro }} ${{ matrix.distro_config.distro_version }} / ruby ${{ matrix.distro_config.runtime_version }} (${{ matrix.arch.label }})"
 
