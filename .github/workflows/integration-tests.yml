@@ -9,6 +9,8 @@ on:
     branches: [main]
   pull_request:
     branches: ['*']
+  schedule:
+    - cron: '0 8 * * 1'  # Every Monday at 08:00 UTC
   workflow_dispatch:
 
 jobs:
@@ -108,8 +110,8 @@ jobs:
           echo "=== Tester container logs ==="
           docker logs "${TEST_NAME}-tester" 2>&1 || true
 
-      - name: Publish failure metric
-        if: failure()
+      - name: Publish success metric
+        if: success()
         run: |
           aws cloudwatch put-metric-data \
             --namespace "GitHubActions" \

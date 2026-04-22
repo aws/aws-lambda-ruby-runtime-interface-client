@@ -58,10 +58,12 @@ jobs:
               --metric-name "TestResult" \
               --dimensions "Name=Distro,Value=${distro}" "Name=DistroVersion,Value=${distro_version}" "Name=RuntimeVersion,Value=${runtime_version}" "Name=Arch,Value=${arch}" \
               --statistic SampleCount \
-              --period 60 \
+              --period 691200 \
               --evaluation-periods 1 \
-              --threshold 0 \
-              --comparison-operator GreaterThanThreshold
+              --datapoints-to-alarm 1 \
+              --threshold 1 \
+              --comparison-operator LessThanThreshold \
+              --treat-missing-data breaching
 
             ALARM_NAMES+=("${ALARM_NAME}")
           done
