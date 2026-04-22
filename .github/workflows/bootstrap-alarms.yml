@@ -58,7 +58,8 @@ jobs:
               --metric-name "TestResult" \
               --dimensions "Name=Distro,Value=${distro}" "Name=DistroVersion,Value=${distro_version}" "Name=RuntimeVersion,Value=${runtime_version}" "Name=Arch,Value=${arch}" \
               --statistic SampleCount \
-              --period 691200 \ # 8 days (7-day schedule + 1-day buffer)
+              # 8 days (7-day schedule + 1-day buffer)
+              --period 691200 \
               --evaluation-periods 1 \
               --datapoints-to-alarm 1 \
               --threshold 1 \
