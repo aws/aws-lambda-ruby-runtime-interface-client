@@ -5,16 +5,19 @@ permissions:
   contents: read
 
 on:
+  pull_request:
+    branches: [ '*' ]
   workflow_dispatch:
 
 env:
-  AWS_REGION: ${{ env.AWS_REGION }}
+  AWS_REGION: ${{ secrets.AWS_REGION }}
   ALARM_NAMESPACE: GitHubActions
-  COMPOSITE_ALARM_NAME: aws_aws-lambda-ruby-runtime-interface-client
 
 jobs:
   bootstrap:
     runs-on: ubuntu-latest
+    env:
+      COMPOSITE_ALARM_NAME: ${{ github.repository_owner }}-${{ github.event.repository.name }}-integration-tests-aggregate
 
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -23,7 +26,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@ececac1a45f3b08a01d2dd070d28d111c5fe6722 # v4
         with:
           role-to-assume: ${{ secrets.AWS_OIDC_ROLE_ARN }}
-          aws-region: ${{ env.AWS_REGION }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Create individual metric alarms
         run: |
