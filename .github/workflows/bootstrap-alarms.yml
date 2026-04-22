@@ -20,6 +20,11 @@ jobs:
       COMPOSITE_ALARM_NAME: GitHubActions-${{ github.repository_owner }}-${{ github.event.repository.name }}-integration-tests-aggregate
 
     steps:
+      - name: Debug OIDC token
+        run: |
+          echo "GitHub ref: ${{ github.ref }}"
+          echo "GitHub event name: ${{ github.event_name }}"
+
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Configure AWS credentials (OIDC)
