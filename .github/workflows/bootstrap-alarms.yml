@@ -78,13 +78,13 @@ jobs:
 
           mapfile -t ALARM_NAMES < /tmp/alarm_names.txt
 
-          # Build the composite alarm rule: triggers if ANY sub-alarm fires
+          # Build the composite alarm rule: triggers if ANY sub-alarm is in ALARM or INSUFFICIENT_DATA
           RULE=""
           for name in "${ALARM_NAMES[@]}"; do
             if [ -n "$RULE" ]; then
               RULE="${RULE} OR "
             fi
-            RULE="${RULE}ALARM(\"${name}\")"
+            RULE="${RULE}(ALARM(\"${name}\") OR INSUFFICIENT_DATA(\"${name}\"))"
           done
 
           echo "Composite alarm rule:"
@@ -95,6 +95,7 @@ jobs:
             --alarm-description "Aggregate alarm for all Ruby RIC integration test permutations" \
             --alarm-rule "${RULE}" \
             --actions-enabled \
-            --alarm-actions "${{ secrets.AWS_ALARM_TARGET_ARN }}"
+            --alarm-actions "${{ secrets.AWS_ALARM_TARGET_ARN }}" \
+            --insufficient-data-actions "${{ secrets.AWS_ALARM_TARGET_ARN }}"
 
           echo "Composite alarm '${COMPOSITE_ALARM_NAME}' created successfully."
