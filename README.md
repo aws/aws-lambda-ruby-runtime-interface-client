@@ -66,7 +66,7 @@ ADD test/integration/test-handlers/echo/app.rb .
 CMD ["app.App::Handler.process"]
 ```
 
-For other distributions, please refer to Dockerfile in the code sample directory.
+For other distributions, please refer to Dockerfiles in the [test/integration/docker](test/integration/docker) directory.
 
 
 ### Local Testing
