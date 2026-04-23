@@ -1,0 +1,64 @@
+{
+  "arch": [
+    {
+      "runner": "ubuntu-latest",
+      "rie": "aws-lambda-rie",
+      "label": "x64"
+    },
+    {
+      "runner": "ubuntu-24.04-arm",
+      "rie": "aws-lambda-rie-arm64",
+      "label": "arm64"
+    }
+  ],
+  "distro_config": [
+    {
+      "distro": "al2023",
+      "distro_version": "al2023",
+      "runtime_version": "3.4",
+      "executable": "/usr/local/bin/aws_lambda_ric"
+    },
+    {
+      "distro": "al2023",
+      "distro_version": "al2023",
+      "runtime_version": "3.3",
+      "executable": "/usr/local/bin/aws_lambda_ric"
+    },
+    {
+      "distro": "alpine",
+      "distro_version": "3.23",
+      "runtime_version": "3.4",
+      "executable": "/usr/local/bundle/bin/aws_lambda_ric"
+    },
+    {
+      "distro": "alpine",
+      "distro_version": "3.23",
+      "runtime_version": "3.3",
+      "executable": "/usr/local/bundle/bin/aws_lambda_ric"
+    },
+    {
+      "distro": "debian",
+      "distro_version": "bookworm",
+      "runtime_version": "3.4",
+      "executable": "/usr/local/bundle/bin/aws_lambda_ric"
+    },
+    {
+      "distro": "debian",
+      "distro_version": "bookworm",
+      "runtime_version": "3.3",
+      "executable": "/usr/local/bundle/bin/aws_lambda_ric"
+    },
+    {
+      "distro": "ubuntu",
+      "distro_version": "24.04",
+      "runtime_version": "3.4",
+      "executable": "/usr/local/bin/aws_lambda_ric"
+    },
+    {
+      "distro": "ubuntu",
+      "distro_version": "24.04",
+      "runtime_version": "3.3",
+      "executable": "/usr/local/bin/aws_lambda_ric"
+    }
+  ]
+}

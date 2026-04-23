@@ -1,6 +1,7 @@
 name: integration-tests
 
 permissions:
+  id-token: write
   contents: read
 
 on:
@@ -8,63 +9,41 @@ on:
     branches: [main]
   pull_request:
     branches: ['*']
+  schedule:
+    - cron: '0 8 * * 1-5'  # Every workday (Mon-Fri) at 08:00 UTC
   workflow_dispatch:
 
 jobs:
+  load-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Load test matrix
+        id: set
+        run: |
+          MATRIX=$(jq -c '.' .github/test-matrix.json)
+          echo "matrix=${MATRIX}" >> "$GITHUB_OUTPUT"
+
   integration-test:
+    needs: load-matrix
     runs-on: ${{ matrix.arch.runner }}
     strategy:
       fail-fast: false
-      matrix:
-        arch:
-          - runner: ubuntu-latest
-            rie: aws-lambda-rie
-            label: x64
-          - runner: ubuntu-24.04-arm
-            rie: aws-lambda-rie-arm64
-            label: arm64
-        distro_config:
-          # al2023
-          - distro: al2023
-            distro_version: "al2023"
-            runtime_version: "3.4"
-            executable: /usr/local/bin/aws_lambda_ric
-          - distro: al2023
-            distro_version: "al2023"
-            runtime_version: "3.3"
-            executable: /usr/local/bin/aws_lambda_ric
-          # Alpine
-          - distro: alpine
-            distro_version: "3.23"
-            runtime_version: "3.4"
-            executable: /usr/local/bundle/bin/aws_lambda_ric
-          - distro: alpine
-            distro_version: "3.23"
-            runtime_version: "3.3"
-            executable: /usr/local/bundle/bin/aws_lambda_ric
-          # Debian
-          - distro: debian
-            distro_version: bookworm
-            runtime_version: "3.4"
-            executable: /usr/local/bundle/bin/aws_lambda_ric
-          - distro: debian
-            distro_version: bookworm
-            runtime_version: "3.3"
-            executable: /usr/local/bundle/bin/aws_lambda_ric
-          # Ubuntu
-          - distro: ubuntu
-            distro_version: "24.04"
-            runtime_version: "3.4"
-            executable: /usr/local/bin/aws_lambda_ric
-          - distro: ubuntu
-            distro_version: "24.04"
-            runtime_version: "3.3"
-            executable: /usr/local/bin/aws_lambda_ric
+      matrix: ${{ fromJson(needs.load-matrix.outputs.matrix) }}
 
     name: "${{ matrix.distro_config.distro }} ${{ matrix.distro_config.distro_version }} / ruby ${{ matrix.distro_config.runtime_version }} (${{ matrix.arch.label }})"
 
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@ec61189d14ec14c8efccab744f656cffd0e33f37 # v6.1.0
+        with:
+          role-to-assume: ${{ secrets.AWS_OIDC_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Download RIE
         run: |
@@ -130,6 +109,16 @@ jobs:
           docker logs "${TEST_NAME}-app" 2>&1 || true
           echo "=== Tester container logs ==="
           docker logs "${TEST_NAME}-tester" 2>&1 || true
+
+      - name: Publish success metric
+        if: success()
+        run: |
+          aws cloudwatch put-metric-data \
+            --namespace "GitHubActions" \
+            --metric-name "TestResult" \
+            --dimensions "Distro=${{ matrix.distro_config.distro }},DistroVersion=${{ matrix.distro_config.distro_version }},RuntimeVersion=${{ matrix.distro_config.runtime_version }},Arch=${{ matrix.arch.label }}" \
+            --value 1 \
+            --unit Count
 
       - name: Cleanup
         if: always()
