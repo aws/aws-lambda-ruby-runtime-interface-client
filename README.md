@@ -12,6 +12,22 @@ You can include this package in your preferred base image to make that base imag
 ## Requirements
 The Ruby Runtime Interface Client package currently supports ruby 3.0 and above.
 
+## Dependency Management
+
+When using Lambda's [managed Ruby runtime](https://docs.aws.amazon.com/lambda/latest/dg/lambda-ruby.html), the runtime includes the AWS SDK for Ruby and its transitive dependencies at specific versions. The SDK's dependencies are listed in the [`aws-sdk-core` gemspec](https://github.com/aws/aws-sdk-ruby/blob/version-3/gems/aws-sdk-core/aws-sdk-core.gemspec) and include gems such as `bigdecimal`, `base64`, and `logger`.
+
+If your `Gemfile.lock` pins a different version of one of these gems than what the runtime provides, you may encounter a `Gem::LoadError`:
+
+```
+You have already activated bigdecimal X.Y.Z, but your Gemfile requires bigdecimal A.B.C.
+```
+
+To avoid this:
+
+- **Do not add version constraints** on transitive dependencies of the SDK in your Gemfile. Refer to the [`aws-sdk-core` gemspec](https://github.com/aws/aws-sdk-ruby/blob/version-3/gems/aws-sdk-core/aws-sdk-core.gemspec) for the current list.
+- If you encounter a version conflict after a runtime update, **re-run `bundle install`** to update your lockfile to match the current runtime, then redeploy.
+- For full control over all dependencies, consider [bundling the SDK yourself](https://docs.aws.amazon.com/lambda/latest/dg/ruby-package.html#ruby-package-runtime-dependencies) or using a [container image](https://docs.aws.amazon.com/lambda/latest/dg/ruby-image.html).
+
 ## Migration from 2.x to 3.x
 
 **Important**: Version 2.x is deprecated. Please upgrade to version 3.x. For more information about Lambda runtime support, see the [AWS Lambda runtimes documentation](https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html).
