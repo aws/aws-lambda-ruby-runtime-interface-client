@@ -1,0 +1,30 @@
+name: Tag version on merge
+on:
+  push:
+    branches: [main]
+    paths: ['lib/aws_lambda_ric/version.rb']
+
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Check version
+        id: check
+        run: |
+          VERSION=$(ruby -e "require './lib/aws_lambda_ric/version'; puts AwsLambdaRIC::VERSION")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          if git rev-parse "refs/tags/$VERSION" >/dev/null 2>&1; then
+            echo "tag_exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag_exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create tag
+        if: steps.check.outputs.tag_exists == 'false'
+        run: |
+          git tag ${{ steps.check.outputs.version }}
+          git push origin ${{ steps.check.outputs.version }}
