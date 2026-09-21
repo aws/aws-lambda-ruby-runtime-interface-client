@@ -3,6 +3,7 @@
 require_relative '../../lib/aws_lambda_ric/lambda_errors'
 require_relative '../../lib/aws_lambda_ric/lambda_server'
 require 'net/http'
+require 'socket'
 require 'minitest/autorun'
 
 class LambdaServerTest < Minitest::Test
@@ -37,10 +38,9 @@ class LambdaServerTest < Minitest::Test
     headers = {'Lambda-Runtime-Function-Error-Type' => @error.runtime_error_type,
                'Lambda-Runtime-Function-XRay-Error-Cause' => large_xray_cause,
                'User-Agent' => @mock_user_agent}
-    post_mock = Minitest::Mock.new
-    post_mock.expect :call, nil, [@error_uri, @error.to_lambda_response.to_json, headers]
+    conn_mock = mock_post_connection(@error_uri.path, @error.to_lambda_response.to_json, headers)
 
-    Net::HTTP.stub(:post, post_mock) do
+    Net::HTTP.stub(:new, conn_mock, [@error_uri.host, @error_uri.port]) do
       @under_test.send_error_response(
         request_id: @request_id,
         error_object: @error.to_lambda_response,
@@ -49,17 +49,16 @@ class LambdaServerTest < Minitest::Test
       )
     end
 
-    assert_mock post_mock
+    assert_mock conn_mock
   end
 
   def test_post_invocation_error_with_too_large_xray_cause
     too_large_xray_cause = 'a' * 1024 * 1024
     headers = {'Lambda-Runtime-Function-Error-Type' => @error.runtime_error_type,
                'User-Agent' => @mock_user_agent}
-    post_mock = Minitest::Mock.new
-    post_mock.expect :call, nil, [@error_uri, @error.to_lambda_response.to_json, headers]
+    conn_mock = mock_post_connection(@error_uri.path, @error.to_lambda_response.to_json, headers)
 
-    Net::HTTP.stub(:post, post_mock) do
+    Net::HTTP.stub(:new, conn_mock, [@error_uri.host, @error_uri.port]) do
       @under_test.send_error_response(
         request_id: @request_id,
         error_object: @error.to_lambda_response,
@@ -68,7 +67,47 @@ class LambdaServerTest < Minitest::Test
       )
     end
 
-    assert_mock post_mock
+    assert_mock conn_mock
+  end
+
+  # Regression: with a proxy in the environment, the response must still reach
+  # the Runtime API directly
+  def test_send_response_reaches_api_and_not_proxy_when_proxy_is_set
+    api = RecordingServer.new
+    proxy = RecordingServer.new
+
+    ['HTTP_PROXY', 'http_proxy'].each do |var|
+      api.reset
+      proxy.reset
+      env_stub(var, "http://#{proxy.address}") do
+        client = RapidClient.new(api.address, @mock_user_agent)
+        client.send_response(request_id: @request_id, response_object: 'response')
+
+        assert_equal 1, api.hits, 'response should reach the Runtime API'
+        assert_equal 0, proxy.hits, "response must not be routed through #{var}"
+      end
+    end
+  ensure
+    api&.close
+    proxy&.close
+  end
+
+  def mock_post_connection(path, body, headers)
+    conn_mock = Minitest::Mock.new
+    conn_mock.expect(:start, true) do |&block|
+      block.call(conn_mock)
+      true
+    end
+    conn_mock.expect(:post, nil, [path, body, headers])
+    conn_mock
+  end
+
+  def env_stub(name, value)
+    previous = ENV[name]
+    ENV[name] = value
+    yield
+  ensure
+    ENV[name] = previous
   end
 
   def mock_next_invocation_response()
@@ -127,5 +166,59 @@ class LambdaServerTest < Minitest::Test
     get_mock = mock_next_invocation_request(mock_response)  
     assert_next_invocation(get_mock, nil)
     assert_mock get_mock
+  end
+end
+
+# A minimal HTTP server that binds to a non-loopback address and counts the
+# requests it receives. Non-loopback matters: Net::HTTP never proxies loopback,
+# so a 127.0.0.1 target would bypass the proxy.
+class RecordingServer
+  def initialize
+    ip = Socket.ip_address_list.find { |a| a.ipv4? && !a.ipv4_loopback? && !a.ipv4_multicast? }
+    raise 'no non-loopback IPv4 interface available' unless ip
+
+    @server = TCPServer.new(ip.ip_address, 0)
+    @hits = 0
+    @lock = Mutex.new
+    @thread = Thread.new { accept_loop }
+  end
+
+  def address
+    "#{@server.addr[3]}:#{@server.addr[1]}"
+  end
+
+  def hits
+    @lock.synchronize { @hits }
+  end
+
+  def reset
+    @lock.synchronize { @hits = 0 }
+  end
+
+  def close
+    @thread&.kill
+    @server&.close
+  end
+
+  private
+
+  def accept_loop
+    loop do
+      client = @server.accept
+      @lock.synchronize { @hits += 1 }
+      drain_request(client)
+      client.write("HTTP/1.1 202 Accepted\r\nContent-Length: 0\r\n\r\n")
+      client.close
+    end
+  rescue IOError, Errno::EBADF
+    # server closed
+  end
+
+  def drain_request(client)
+    content_length = 0
+    while (line = client.gets) && line != "\r\n"
+      content_length = line.split(':', 2).last.to_i if line =~ /\AContent-Length:/i
+    end
+    client.read(content_length) if content_length.positive?
   end
 end

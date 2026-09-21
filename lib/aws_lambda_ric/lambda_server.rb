@@ -20,7 +20,7 @@ class RapidClient
   def next_invocation
     next_invocation_uri = URI(@server_address + '/runtime/invocation/next')
     begin
-      http = Net::HTTP.new(next_invocation_uri.host, next_invocation_uri.port)
+      http = build_client(next_invocation_uri)
       http.read_timeout = LONG_TIMEOUT_MS
       resp = http.start do |connection|
         connection.get(next_invocation_uri.path, { 'User-Agent' => @user_agent })
@@ -49,7 +49,7 @@ class RapidClient
       if content_type == 'application/unknown'
         response_object = response_object.read
       end
-      Net::HTTP.post(
+      post(
         response_uri,
         response_object,
         { 'Content-Type' => content_type, 'User-Agent' => @user_agent }
@@ -64,7 +64,7 @@ class RapidClient
     begin
       headers = { 'Lambda-Runtime-Function-Error-Type' => error.runtime_error_type, 'User-Agent' => @user_agent }
       headers['Lambda-Runtime-Function-XRay-Error-Cause'] = xray_cause if xray_cause.bytesize < MAX_HEADER_SIZE_BYTES
-      Net::HTTP.post(
+      post(
         response_uri,
         error_object.to_json,
         headers
@@ -77,13 +77,28 @@ class RapidClient
   def send_init_error(error_object:, error:)
     uri = URI("#{@server_address}/runtime/init/error")
     begin
-      Net::HTTP.post(
+      post(
         uri,
         error_object.to_json,
         { 'Lambda-Runtime-Function-Error-Type' => error.runtime_error_type, 'User-Agent' => @user_agent }
       )
     rescue StandardError => e
       raise LambdaErrors::LambdaRuntimeInitError.new(e)
+    end
+  end
+
+  private
+
+  # The Runtime API endpoint must never be proxied. The nil proxy argument
+  # disables Net::HTTP's default :ENV proxy resolution, which would otherwise
+  # route calls through a customer-configured PROXY.
+  def build_client(uri)
+    Net::HTTP.new(uri.host, uri.port, nil)
+  end
+
+  def post(uri, body, headers)
+    build_client(uri).start do |connection|
+      connection.post(uri.path, body, headers)
     end
   end
 end
