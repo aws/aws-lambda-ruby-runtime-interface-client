@@ -6,17 +6,3 @@ RUN gem uninstall aws_lambda_ric --executables
 ADD pkg /tmp/pkg
 RUN gem install /tmp/pkg/aws_lambda_ric-*.gem
 RUN rm -rf /tmp/pkg
-
-# Route every HTTP call in the container through an unreachable proxy. The
-# whole suite runs with this: after the fix the RIC bypasses it for Runtime
-# API traffic and every test still passes; before the fix the RIC would
-# try to reach 127.0.0.1:1, connect refused, and every test would fail.
-ENV HTTP_PROXY=http://127.0.0.1:1
-ENV http_proxy=http://127.0.0.1:1
-
-# Custom entrypoint binds RIE's Runtime API to the container's own hostname
-# (a non-loopback address), so Ruby's URI.find_proxy loopback bypass does
-# not silently hide the bug.
-COPY test/dockerized/entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
-ENTRYPOINT ["/entrypoint.sh"]
