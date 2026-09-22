@@ -1,0 +1,14 @@
+{
+    "tests": [
+        {
+            "name": "test_ric_bypasses_http_proxy",
+            "handler": "proxy.check_proxy_bypass",
+            "request": {},
+            "assertions": [
+                {
+                    "response": "success"
+                }
+            ]
+        }
+    ]
+}
