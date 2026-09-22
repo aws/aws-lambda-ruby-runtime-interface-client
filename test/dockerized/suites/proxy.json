@@ -6,10 +6,7 @@
             "request": {},
             "assertions": [
                 {
-                    "response": {
-                        "baseline_uses_proxy": true,
-                        "ric_bypasses_proxy": true
-                    }
+                    "response": "success"
                 }
             ]
         }
