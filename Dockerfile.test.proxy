@@ -1,0 +1,15 @@
+# Variant of Dockerfile.test used only for the proxy-regression suite.
+# Extends the standard test image with an unreachable HTTP_PROXY and an
+# entrypoint that binds RIE's Runtime API to the container's own
+# non-loopback hostname. Kept separate from Dockerfile.test so the other
+# suites keep running against a plain RIE-on-loopback setup.
+#
+# Requires local/test to be built first (see .github/workflows/dockerized-test.yml).
+FROM local/test
+
+ENV HTTP_PROXY=http://127.0.0.1:1
+ENV http_proxy=http://127.0.0.1:1
+
+COPY test/dockerized/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]

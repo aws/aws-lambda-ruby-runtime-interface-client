@@ -39,3 +39,13 @@ jobs:
         suiteFileArray: '["./test/dockerized/suites/*.json"]'
         dockerImageName: 'local/test'
         taskFolder: './test/dockerized/tasks'
+
+    - name: Build the proxy image
+      run: docker build . -t local/test-proxy -f Dockerfile.test.proxy
+
+    - name: Run proxy tests
+      uses: aws/containerized-test-runner-for-aws-lambda@511d270614f2c6b1613848db6dcf920a591c3c89 # main
+      with:
+        suiteFileArray: '["./test/dockerized/suites/proxy/*.json"]'
+        dockerImageName: 'local/test-proxy'
+        taskFolder: './test/dockerized/tasks'
