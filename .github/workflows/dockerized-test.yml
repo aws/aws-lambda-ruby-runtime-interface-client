@@ -34,7 +34,7 @@ jobs:
       run: docker build . -t local/test -f Dockerfile.test --build-arg BASE_IMAGE=public.ecr.aws/lambda/ruby:${{ matrix.ruby_version }}
 
     - name: Run tests
-      uses: aws/containerized-test-runner-for-aws-lambda@511d270614f2c6b1613848db6dcf920a591c3c89 # main
+      uses: aws/containerized-test-runner-for-aws-lambda@0863dd17b5fc19585250a2405c0f939a77b4f397 # main
       with:
         suiteFileArray: '["./test/dockerized/suites/*.json"]'
         dockerImageName: 'local/test'
@@ -44,7 +44,7 @@ jobs:
       run: docker build . -t local/test-proxy -f Dockerfile.test.proxy
 
     - name: Run proxy tests
-      uses: aws/containerized-test-runner-for-aws-lambda@511d270614f2c6b1613848db6dcf920a591c3c89 # main
+      uses: aws/containerized-test-runner-for-aws-lambda@0863dd17b5fc19585250a2405c0f939a77b4f397 # main
       with:
         suiteFileArray: '["./test/dockerized/suites/proxy/*.json"]'
         dockerImageName: 'local/test-proxy'
